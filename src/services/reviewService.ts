@@ -1,4 +1,3 @@
-// src/services/reviewService.ts
 import api from "../api/axios";
 import type {
   GetProductReviewsResponse,
@@ -8,10 +7,6 @@ import type {
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
-/**
- * Lấy danh sách review của sản phẩm (có phân trang)
- * Endpoint: GET /api/reviews/products/{productId}
- */
 export const getProductReviews = (
   productId: number,
   pageNo: number,
@@ -30,14 +25,6 @@ export const getProductReviews = (
     .then((res) => res.data);
 };
 
-/**
- * Gửi một review mới cho sản phẩm (Sử dụng Product ID).
- * @deprecated Endpoint này có thể không còn được dùng.
- * Sử dụng createReviewForOrderItem thay thế.
- * Endpoint: POST /api/reviews/{productId}
- * @param productId ID của sản phẩm
- * @param data Dữ liệu review
- */
 export const createReview = (
   productId: number,
   data: CreateReviewRequest
@@ -47,13 +34,6 @@ export const createReview = (
     .then((res) => res.data);
 };
 
-// --- HÀM MỚI ---
-/**
- * Gửi một review mới cho một Order Item cụ thể (đã mua).
- * Endpoint: POST /api/reviews/order-item/{orderItemId}
- * @param orderItemId ID của Order Item
- * @param data Dữ liệu review
- */
 export const createReviewForOrderItem = (
   orderItemId: number,
   data: CreateReviewRequest
@@ -65,4 +45,3 @@ export const createReviewForOrderItem = (
     )
     .then((res) => res.data);
 };
-// --- KẾT THÚC HÀM MỚI ---

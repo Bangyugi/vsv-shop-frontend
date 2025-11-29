@@ -1,4 +1,3 @@
-// src/features/products/components/RelatedProducts.tsx
 import { Container, Typography, Box } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import ProductCard from "../../homepage/components/ProductCard";
@@ -12,12 +11,8 @@ interface RelatedProductsProps {
 }
 
 const RelatedProducts = ({ products }: RelatedProductsProps) => {
-  // --- SỬA LỖI: Chỉ bật loop khi có đủ slide ---
-  // slidesPerView lớn nhất trong breakpoints là 5.
-  // Chúng ta chỉ nên bật loop nếu số lượng sản phẩm LỚN HƠN 5.
   const maxSlidesPerView = 5;
   const enableLoop = products.length > maxSlidesPerView;
-  // --- KẾT THÚC SỬA LỖI ---
 
   return (
     <Box className="select-none">
@@ -35,9 +30,7 @@ const RelatedProducts = ({ products }: RelatedProductsProps) => {
           spaceBetween={30}
           slidesPerView={1}
           navigation
-          // --- SỬA LỖI: Sử dụng biến enableLoop ---
           loop={enableLoop}
-          // --- KẾT THÚC SỬA LỖI ---
           autoplay={{
             delay: 5000,
             disableOnInteraction: false,
@@ -47,7 +40,7 @@ const RelatedProducts = ({ products }: RelatedProductsProps) => {
             640: { slidesPerView: 2 },
             768: { slidesPerView: 3 },
             1200: { slidesPerView: 4 },
-            1536: { slidesPerView: maxSlidesPerView }, // Dùng biến
+            1536: { slidesPerView: maxSlidesPerView },
           }}
         >
           {products.map((product, index) => (

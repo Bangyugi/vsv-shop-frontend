@@ -122,7 +122,7 @@ const CheckoutPage = () => {
       setIsLoadingAddresses(true);
       try {
         const response = await addressService.getMyAddresses();
-        // --- SỬA LỖI 1 (image_456c64.png): Thêm kiểm tra response.data ---
+
         if (response.code === 200 && response.data) {
           const mappedAddresses = response.data.map((apiAddr) =>
             mapApiAddressToUserAddress(apiAddr, user)
@@ -141,12 +141,10 @@ const CheckoutPage = () => {
             setShowAddressForm(true);
           }
         } else if (response.code === 200 && !response.data) {
-          // Xử lý trường hợp API trả về 200 nhưng data là mảng rỗng (hoặc null)
           setSavedAddresses([]);
           setSelectedAddressId("new");
           setShowAddressForm(true);
         }
-        // --- KẾT THÚC SỬA LỖI 1 ---
       } catch (error: any) {
         setSnackbar({
           open: true,
@@ -188,7 +186,7 @@ const CheckoutPage = () => {
 
     try {
       const response = await addressService.addAddress(apiRequestData);
-      // --- SỬA LỖI 2 (image_456ca3.png): Thêm kiểm tra response.data ---
+
       if ((response.code === 200 || response.code === 201) && response.data) {
         const newUserAddress = mapApiAddressToUserAddress(response.data, user);
         const updatedAddresses = [newUserAddress, ...savedAddresses];
@@ -198,7 +196,6 @@ const CheckoutPage = () => {
       } else {
         throw new Error(response.message || "Failed to add address");
       }
-      // --- KẾT THÚC SỬA LỖI 2 ---
     } catch (err: any) {
       setAddressSubmitError(
         err.response?.data?.message || err.message || "An error occurred"

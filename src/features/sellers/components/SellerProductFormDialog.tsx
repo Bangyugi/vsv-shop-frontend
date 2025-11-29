@@ -15,7 +15,6 @@ import {
   Grid,
   InputAdornment,
   Typography,
-  Box,
   IconButton,
   Tooltip,
   Divider,
@@ -27,7 +26,6 @@ import * as yup from "yup";
 import type {
   ApiProduct,
   SellerProductFormValues,
-  CreateProductVariant,
 } from "../../../types/product";
 import type { ApiCategory } from "../../../types/category";
 
@@ -135,7 +133,6 @@ const SellerProductFormDialog: React.FC<SellerProductFormDialogProps> = ({
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      {/* --- THAY ĐỔI 2: Bọc <form> bằng <FormikProvider> --- */}
       <FormikProvider value={formik}>
         <form onSubmit={formik.handleSubmit}>
           <DialogTitle>
@@ -143,7 +140,6 @@ const SellerProductFormDialog: React.FC<SellerProductFormDialogProps> = ({
           </DialogTitle>
           <DialogContent>
             <Grid container spacing={2} sx={{ pt: 1 }}>
-              {/* (Title, Description, Prices, Category, Images giữ nguyên) */}
               <Grid item xs={12}>
                 <TextField
                   fullWidth
@@ -241,7 +237,6 @@ const SellerProductFormDialog: React.FC<SellerProductFormDialogProps> = ({
                     </MenuItem>
                     {parentOptions.map((cat) => (
                       <MenuItem key={cat.id} value={cat.id}>
-                        {/* Thêm prefix để phân biệt L1, L2, L3 */}
                         {cat.level > 1 && "\u00A0\u00A0".repeat(cat.level - 1)}
                         (L{cat.level}) {cat.name}
                       </MenuItem>
@@ -270,7 +265,6 @@ const SellerProductFormDialog: React.FC<SellerProductFormDialogProps> = ({
                 />
               </Grid>
 
-              {/* (Phần FieldArray giữ nguyên) */}
               <Grid item xs={12} sx={{ mt: 2 }}>
                 <Divider />
                 <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
@@ -411,7 +405,6 @@ const SellerProductFormDialog: React.FC<SellerProductFormDialogProps> = ({
           </DialogActions>
         </form>
       </FormikProvider>
-      {/* --- KẾT THÚC THAY ĐỔI 2 --- */}
     </Dialog>
   );
 };

@@ -1,4 +1,3 @@
-// src/features/profile/components/SecuritySetting.tsx
 import {
   Box,
   Button,
@@ -7,27 +6,23 @@ import {
   Typography,
   IconButton,
   InputAdornment,
-  CircularProgress, // <-- Thêm CircularProgress
-  Alert, // <-- Thêm Alert
-  // Snackbar, // <-- Thêm Snackbar (Tùy chọn, nếu muốn dùng Snackbar thay Alert)
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import { useState } from "react";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { motion } from "framer-motion";
-import * as authService from "../../../services/authService"; // <-- Import authService
-import { useAuth } from "../../../contexts/AuthContext"; // <-- THÊM
+import * as authService from "../../../services/authService";
+import { useAuth } from "../../../contexts/AuthContext";
 
-// --- Validation Schema ---
-// (Giữ nguyên validation schema)
 const validationSchema = yup.object({
   currentPassword: yup.string().required("Current password is required"),
   newPassword: yup
     .string()
     .min(6, "Password must be at least 6 characters")
     .required("New password is required")
-    // Thêm kiểm tra không trùng mật khẩu cũ
     .notOneOf(
       [yup.ref("currentPassword")],
       "New password must be different from the current one"
@@ -38,22 +33,17 @@ const validationSchema = yup.object({
     .required("Confirm password is required"),
 });
 
-// --- Component ---
 const SecuritySettings = () => {
-  // State hiển thị mật khẩu
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-
-  // --- State cho thông báo ---
   const [submitStatus, setSubmitStatus] = useState<{
     type: "success" | "error";
     message: string;
   } | null>(null);
 
-  const { logout } = useAuth(); // <-- THÊM: Lấy hàm logout từ context
+  const { logout } = useAuth();
 
-  // --- Formik Hook ---
   const formik = useFormik({
     initialValues: {
       currentPassword: "",
@@ -62,7 +52,7 @@ const SecuritySettings = () => {
     },
     validationSchema: validationSchema,
     onSubmit: async (values, { setSubmitting, resetForm, setFieldError }) => {
-      setSubmitStatus(null); // Reset thông báo trước khi submit
+      setSubmitStatus(null);
       try {
         const requestData = {
           oldPassword: values.currentPassword,
@@ -73,18 +63,13 @@ const SecuritySettings = () => {
         if (response.code === 200) {
           setSubmitStatus({
             type: "success",
-            // <-- THAY ĐỔI: Cập nhật thông báo
             message: "Password updated successfully! You will be logged out.",
           });
-          resetForm(); // Reset form sau khi thành công
-
-          // --- THÊM: Tự động logout sau 1.5s ---
+          resetForm();
           setTimeout(() => {
             logout();
           }, 1500);
-          // --- KẾT THÚC THÊM ---
         } else {
-          // Ném lỗi với message từ API nếu code không phải 200
           throw new Error(response.message || "Failed to update password");
         }
       } catch (error: any) {
@@ -95,17 +80,15 @@ const SecuritySettings = () => {
           "An unexpected error occurred.";
         setSubmitStatus({ type: "error", message: errorMessage });
 
-        // Tùy chọn: Set lỗi cụ thể cho trường nếu API trả về chi tiết
         if (errorMessage.toLowerCase().includes("old password")) {
           setFieldError("currentPassword", errorMessage);
         }
       } finally {
-        setSubmitting(false); // Kết thúc trạng thái submitting của Formik
+        setSubmitting(false);
       }
     },
   });
 
-  // --- Hàm tiện ích tạo icon ẩn/hiện mật khẩu ---
   const createEndAdornment = (
     show: boolean,
     setShow: (show: boolean) => void
@@ -119,7 +102,6 @@ const SecuritySettings = () => {
     ),
   });
 
-  // --- JSX ---
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -135,7 +117,6 @@ const SecuritySettings = () => {
         Change Password
       </Typography>
 
-      {/* --- Hiển thị thông báo thành công/lỗi --- */}
       {submitStatus && (
         <Alert severity={submitStatus.type} sx={{ mb: 3 }}>
           {submitStatus.message}
@@ -147,12 +128,11 @@ const SecuritySettings = () => {
         onSubmit={formik.handleSubmit}
         noValidate
         sx={{
-          maxWidth: "80%", // Giữ giới hạn chiều rộng nếu muốn
+          maxWidth: "80%",
           margin: "0 auto",
         }}
       >
         <Grid container spacing={3}>
-          {/* Current Password */}
           <Grid item xs={12}>
             <TextField
               fullWidth
@@ -170,10 +150,9 @@ const SecuritySettings = () => {
                 formik.touched.currentPassword && formik.errors.currentPassword
               }
               InputProps={createEndAdornment(showCurrent, setShowCurrent)}
-              disabled={formik.isSubmitting} // Disable khi đang submit
+              disabled={formik.isSubmitting}
             />
           </Grid>
-          {/* New Password */}
           <Grid item xs={12}>
             <TextField
               fullWidth
@@ -190,10 +169,9 @@ const SecuritySettings = () => {
                 formik.touched.newPassword && formik.errors.newPassword
               }
               InputProps={createEndAdornment(showNew, setShowNew)}
-              disabled={formik.isSubmitting} // Disable khi đang submit
+              disabled={formik.isSubmitting}
             />
           </Grid>
-          {/* Confirm New Password */}
           <Grid item xs={12}>
             <TextField
               fullWidth
@@ -211,19 +189,17 @@ const SecuritySettings = () => {
                 formik.touched.confirmPassword && formik.errors.confirmPassword
               }
               InputProps={createEndAdornment(showConfirm, setShowConfirm)}
-              disabled={formik.isSubmitting} // Disable khi đang submit
+              disabled={formik.isSubmitting}
             />
           </Grid>
-          {/* Submit Button */}
           <Grid item xs={12} className="text-right">
             <Button
               type="submit"
               variant="contained"
               size="large"
-              disabled={formik.isSubmitting} // Disable nút khi đang submit
+              disabled={formik.isSubmitting}
               sx={{ bgcolor: "primary.main", borderRadius: "50px", px: 4 }}
             >
-              {/* Hiển thị loading indicator */}
               {formik.isSubmitting ? (
                 <CircularProgress size={24} color="inherit" />
               ) : (
@@ -234,7 +210,6 @@ const SecuritySettings = () => {
         </Grid>
       </Box>
 
-      {/* Tùy chọn: Dùng Snackbar thay vì Alert */}
       {/*
       <Snackbar
           open={!!submitStatus}

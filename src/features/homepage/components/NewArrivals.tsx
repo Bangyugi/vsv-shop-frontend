@@ -107,7 +107,6 @@ const NewArrivals = () => {
           1024: { slidesPerView: 4 },
         }}
       >
-        {/* Cập nhật vòng lặp để dùng state `products` */}
         {products.map((product, index) => (
           <SwiperSlide
             key={product.id}
@@ -118,15 +117,12 @@ const NewArrivals = () => {
               height: "auto",
             }}
           >
-            {/* Thêm RouterLink để click vào sản phẩm */}
             <RouterLink
               to={`/product/${product.id}`}
               style={{ textDecoration: "none", width: "100%" }}
             >
               <Box sx={{ width: "100%", maxWidth: 320 }}>
-                {/* --- THAY ĐỔI: Truyền thẳng product --- */}
                 <ProductCard product={product} index={index} />
-                {/* --- KẾT THÚC THAY ĐỔI --- */}
               </Box>
             </RouterLink>
           </SwiperSlide>
@@ -146,7 +142,7 @@ const NewArrivals = () => {
         >
           New Arrivals
         </Typography>
-        {/* 6. Gọi hàm renderContent */}
+
         {renderContent()}
       </Container>
     </Box>

@@ -1,4 +1,4 @@
-// src/services/adminService.ts
+
 import api from "../api/axios";
 
 import type { ApiResponse } from "../types";
@@ -13,21 +13,19 @@ import type {
 
 import type { ApiProduct, ProductPageData } from "../types/product";
 
-// --- THÊM IMPORTS CATEGORY VÀ CẬP NHẬT KIỂU DỮ LIỆU ---
+
 import type {
   ApiCategory,
   CreateCategoryRequest,
   UpdateCategoryRequest,
 } from "../types/category";
-// --- KẾT THÚC THÊM IMPORTS CATEGORY ---
 
-// --- THÊM MỚI: Import types từ order.ts ---
 import type {
   ApiOrderData,
   ApiOrderStatus,
   OrderPageData,
 } from "../types/order";
-// --- KẾT THÚC THÊM MỚI ---
+
 
 const BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
@@ -60,30 +58,20 @@ export const getUsers = async (
     .then((res) => res.data);
 };
 
-/**
- * Lấy thông tin chi tiết của một user bằng ID
- * @param userId ID của user
- */
+
 export const getUserById = (userId: number): Promise<ApiResponse<UserData>> => {
   return api
     .get<ApiResponse<UserData>>(`${BASE_URL}/admin/users/find/${userId}`)
     .then((res) => res.data);
 };
 
-/**
- * Xóa một user bằng ID
- * @param userId ID của user
- */
+
 export const deleteUser = (userId: number): Promise<ApiResponse<null>> => {
   return api
     .delete<ApiResponse<null>>(`${BASE_URL}/admin/users/delete/${userId}`)
     .then((res) => res.data);
 };
 
-/**
- * Lấy thông tin chi tiết của một seller bằng ID (User ID của seller đó)
- * @param sellerUserId ID của user (người là seller)
- */
 export const getSellerById = (
   sellerUserId: number
 ): Promise<ApiResponse<ApiSellerData>> => {
@@ -94,15 +82,7 @@ export const getSellerById = (
     .then((res) => res.data);
 };
 
-/**
- * Lấy danh sách sellers (có phân trang và filter)
- * @param page API (bắt đầu từ 1)
- * @param size Kích thước trang
- * @param statusFilter Lọc theo trạng thái
- * @param keyword Từ khóa tìm kiếm
- * @param sortBy Tên trường sắp xếp
- * @param sortDir Hướng sắp xếp (ASC/DESC)
- */
+
 export const getSellers = async (
   page: number,
   size: number,
@@ -125,11 +105,7 @@ export const getSellers = async (
     .then((res) => res.data);
 };
 
-/**
- * Cập nhật trạng thái của một seller
- * @param sellerId ID của seller
- * @param newStatus Trạng thái mới (ACTIVE, REJECTED, SUSPENDED)
- */
+
 export const updateSellerStatus = async (
   sellerId: number,
   newStatus: SellerStatus
@@ -143,15 +119,7 @@ export const updateSellerStatus = async (
     .then((res) => res.data);
 };
 
-/**
- * Lấy danh sách sản phẩm cho Admin (phân trang, filter)
- * @param page Trang
- * @param size Kích thước trang
- * @param status (VISIBLE, HIDDEN, ALL)
- * @param keyword Từ khóa
- * @param sortBy Sắp xếp
- * @param sortDir Hướng sắp xếp
- */
+
 export const getAdminProducts = async (
   page: number,
   size: number,
@@ -174,11 +142,7 @@ export const getAdminProducts = async (
     .then((res) => res.data);
 };
 
-/**
- * Cập nhật trạng thái hiển thị của sản phẩm
- * @param productId ID sản phẩm
- * @param isVisible Trạng thái mới
- */
+
 export const adminUpdateProductVisibility = (
   productId: number,
   isVisible: boolean
@@ -191,10 +155,6 @@ export const adminUpdateProductVisibility = (
     .then((res) => res.data);
 };
 
-/**
- * Xóa sản phẩm vĩnh viễn (Admin)
- * @param productId ID sản phẩm
- */
 export const adminDeleteProduct = (
   productId: number
 ): Promise<ApiResponse<null>> => {
@@ -203,7 +163,7 @@ export const adminDeleteProduct = (
     .then((res) => res.data);
 };
 
-// --- CẬP NHẬT KIỂU TRẢ VỀ ---
+
 export const getAdminCategories = async (): Promise<
   ApiResponse<ApiCategory[]>
 > => {
@@ -220,11 +180,7 @@ export const createCategory = async (
     .then((res) => res.data);
 };
 
-/**
- * Cập nhật một category bằng ID (PUT /api/categories/{id})
- * @param id ID của category
- * @param data Dữ liệu category cần cập nhật
- */
+
 export const updateCategory = async (
   id: number,
   data: UpdateCategoryRequest
@@ -242,7 +198,7 @@ export const deleteCategory = async (
     .then((res) => res.data);
 };
 
-// --- CẬP NHẬT: Loại bỏ 'any' ---
+
 export const getAdminOrders = async (
   page: number,
   size: number,
@@ -259,7 +215,7 @@ export const getAdminOrders = async (
     .then((res) => res.data);
 };
 
-// --- CẬP NHẬT: Loại bỏ 'any' ---
+
 export const updateAdminOrderStatus = async (
   orderId: string,
   status: ApiOrderStatus

@@ -49,7 +49,7 @@ const AddressSelector = ({
           }}
         />
       ))}
-      {/* Option to add new address */}
+
       <FormControlLabel
         value="new"
         control={<Radio />}

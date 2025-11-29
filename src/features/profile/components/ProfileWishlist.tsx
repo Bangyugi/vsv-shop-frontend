@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"; // <-- THÊM useState
+import { useMemo, useState } from "react";
 import { Grid, Typography, Box, CircularProgress, Alert } from "@mui/material";
 import { AnimatePresence } from "framer-motion";
 import WishlistItemCard from "../../wishlist/components/WishlistItemCard";
@@ -11,9 +11,7 @@ import type {
   WishlistApiProduct,
 } from "../../../types/wishlist";
 import { useWishlist } from "../../../contexts/WishlistContext";
-// --- THÊM IMPORT ---
 import { useCart } from "../../../contexts/CartContext";
-// --- KẾT THÚC THÊM ---
 
 const ProfileWishlist = () => {
   const {
@@ -23,10 +21,8 @@ const ProfileWishlist = () => {
     removeFromWishlist,
   } = useWishlist();
 
-  // --- THÊM STATE ---
   const { addToCart } = useCart();
   const [addingToCartId, setAddingToCartId] = useState<number | null>(null);
-  // --- KẾT THÚC THÊM ---
 
   const items = useMemo((): WishlistItemFE[] => {
     if (!wishlistData?.products) {
@@ -37,7 +33,7 @@ const ProfileWishlist = () => {
       name: product.title,
       price: product.sellingPrice,
       image: product.images?.[0] || "/placeholder.png",
-      variants: product.variants, // <-- THÊM DÒNG NÀY
+      variants: product.variants,
     }));
   }, [wishlistData]);
 
@@ -45,20 +41,18 @@ const ProfileWishlist = () => {
     await removeFromWishlist(productId);
   };
 
-  // --- CẬP NHẬT HÀM NÀY ---
   const handleAddToCart = async (item: WishlistItemFE) => {
     setAddingToCartId(item.id);
     const defaultVariant = item.variants?.[0];
 
     if (!defaultVariant) {
       console.error("No variants found for this wishlist item.");
-      await addToCart(0, 0); // Trigger lỗi từ context
+      await addToCart(0, 0);
     } else {
       await addToCart(defaultVariant.id, 1);
     }
     setAddingToCartId(null);
   };
-  // --- KẾT THÚC CẬP NHẬT ---
 
   return (
     <motion.div
@@ -75,21 +69,18 @@ const ProfileWishlist = () => {
         My Wishlist
       </Typography>
 
-      {/* --- Hiển thị Loading --- */}
       {isLoading && (
         <Box className="flex justify-center items-center min-h-[300px]">
           <CircularProgress />
         </Box>
       )}
 
-      {/* --- Hiển thị Lỗi --- */}
       {!isLoading && error && (
         <Alert severity="error" sx={{ my: 2 }}>
           {error}
         </Alert>
       )}
 
-      {/* --- Hiển thị danh sách hoặc Empty --- */}
       {!isLoading &&
         !error &&
         (items.length === 0 ? (
@@ -99,7 +90,6 @@ const ProfileWishlist = () => {
             <AnimatePresence>
               {items.map((item, index) => (
                 <Grid item key={item.id} xs={12} sm={6} md={4}>
-                  {/* --- CẬP NHẬT PROPS --- */}
                   <WishlistItemCard
                     item={item}
                     onRemove={handleRemove}
@@ -107,14 +97,11 @@ const ProfileWishlist = () => {
                     isAddingToCart={addingToCartId === item.id}
                     index={index}
                   />
-                  {/* --- KẾT THÚC CẬP NHẬT --- */}
                 </Grid>
               ))}
             </AnimatePresence>
           </Grid>
         ))}
-
-      {/* --- XÓA Snackbar --- */}
     </motion.div>
   );
 };

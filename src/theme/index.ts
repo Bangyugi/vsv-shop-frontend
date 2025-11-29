@@ -1,10 +1,9 @@
 import { createTheme } from "@mui/material/styles";
-import { colors, typography } from "./tokens"; // Import từ file tokens
+import { colors, typography } from "./tokens";
 
 const theme = createTheme({
   palette: {
     primary: {
-      // Sử dụng giá trị màu trực tiếp
       main: colors.primary,
     },
     secondary: {

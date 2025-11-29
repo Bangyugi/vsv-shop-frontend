@@ -146,7 +146,6 @@ const SellerSidebar: React.FC<SellerSidebarProps> = ({
       component="nav"
       sx={{ width: { lg: drawerWidth }, flexShrink: { lg: 0 } }}
     >
-      {/* Mobile Drawer */}
       <Drawer
         variant="temporary"
         open={mobileOpen}
@@ -166,7 +165,6 @@ const SellerSidebar: React.FC<SellerSidebarProps> = ({
         {drawerContent}
       </Drawer>
 
-      {/* Desktop Drawer */}
       <Drawer
         variant="permanent"
         sx={{

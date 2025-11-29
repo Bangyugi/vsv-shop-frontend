@@ -22,8 +22,6 @@ const ACCESS_TOKEN_KEY = "vsv_access_token";
 const REFRESH_TOKEN_KEY = "vsv_refresh_token";
 
 // === Access Token ===
-
-// Export object chứa các phương thức xử lý token
 export const tokenStorage = {
   setAccessToken: (token: string): void => {
     sessionStorage.setItem(ACCESS_TOKEN_KEY, token);
@@ -58,7 +56,3 @@ export const tokenStorage = {
     localStorage.removeItem(REFRESH_TOKEN_KEY);
   },
 };
-
-// --- XÓA CÁC HÀM EXPORT LỖI BÊN DƯỚI ---
-// (Đã xóa)
-// --- KẾT THÚC XÓA ---

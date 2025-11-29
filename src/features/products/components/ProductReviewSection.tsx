@@ -1,4 +1,3 @@
-// src/features/products/components/ProductReviewSection.tsx
 import { useState, useEffect } from "react";
 import {
   Box,
@@ -11,15 +10,11 @@ import {
 import StarBorderOutlinedIcon from "@mui/icons-material/StarBorderOutlined";
 import type { ProductReview } from "../../../types";
 import RatingSummary from "./RatingSummary";
-// import ReviewForm from "./ReviewForm"; // <-- XÓA: Bỏ import form
 import ReviewList from "./ReviewList";
 
 import * as reviewService from "../../../services/reviewService";
 import type { ApiProductReview } from "../../../types/review";
 
-/**
- * Chuyển đổi dữ liệu review từ API sang kiểu dữ liệu ProductReview của Frontend
- */
 const mapApiReviewToFrontend = (
   apiReview: ApiProductReview
 ): ProductReview => ({
@@ -28,13 +23,13 @@ const mapApiReviewToFrontend = (
   avatar: apiReview.user.avatar || apiReview.user.firstName.charAt(0) || "A",
   rating: apiReview.rating,
   comment: apiReview.reviewText,
-  date: apiReview.createdAt, // Dùng createdAt cho ngày review
+  date: apiReview.createdAt,
 });
 
-const REVIEWS_PER_PAGE = 5; // Tải 5 review mỗi lần
+const REVIEWS_PER_PAGE = 5;
 
 interface ProductReviewSectionProps {
-  productId: number; // Yêu cầu productId để fetch
+  productId: number;
 }
 
 const ProductReviewSection = ({ productId }: ProductReviewSectionProps) => {
@@ -43,8 +38,6 @@ const ProductReviewSection = ({ productId }: ProductReviewSectionProps) => {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  // XÓA: Bỏ state submit review
-  // const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   useEffect(() => {
     if (!productId) {
@@ -109,9 +102,6 @@ const ProductReviewSection = ({ productId }: ProductReviewSectionProps) => {
     }
   };
 
-  // XÓA: Bỏ hàm handleSubmitReview
-  // const handleSubmitReview = (data: { rating: number; comment: string }) => { ... };
-
   return (
     <Box sx={{ my: { xs: 5, md: 8 } }}>
       <Box className="flex items-center gap-2 mb-6">
@@ -146,7 +136,7 @@ const ProductReviewSection = ({ productId }: ProductReviewSectionProps) => {
             <Grid
               container
               spacing={{ xs: 3, md: 5 }}
-              justifyContent="flex-start" // <-- Căn giữa
+              justifyContent="flex-start"
             >
               <Grid item xs={12} md={8} lg={6}>
                 <Paper

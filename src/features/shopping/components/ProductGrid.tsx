@@ -1,5 +1,4 @@
-// src/features/shopping/components/ProductGrid.tsx
-import { Box, Typography, Alert } from "@mui/material"; // Thêm Alert
+import { Box, Typography, Alert } from "@mui/material";
 import { AnimatePresence, motion } from "framer-motion";
 
 import ProductCard from "./ProductCard";
@@ -9,11 +8,10 @@ import type { FrontendProduct } from "../../../types/product";
 interface ProductGridProps {
   products: FrontendProduct[];
   isLoading: boolean;
-  error?: string | null; // <-- Thêm prop error
+  error?: string | null;
 }
 
 const ProductGrid = ({ products, isLoading, error }: ProductGridProps) => {
-  // 1. Hiển thị Skeletons (Ưu tiên hàng đầu)
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -24,7 +22,6 @@ const ProductGrid = ({ products, isLoading, error }: ProductGridProps) => {
     );
   }
 
-  // 2. Hiển thị lỗi (Nếu không loading và có lỗi)
   if (error) {
     return (
       <Alert
@@ -42,7 +39,6 @@ const ProductGrid = ({ products, isLoading, error }: ProductGridProps) => {
     );
   }
 
-  // 3. Hiển thị "Không tìm thấy sản phẩm" (Nếu không loading, không lỗi, và mảng rỗng)
   if (products.length === 0) {
     return (
       <Box className="flex h-96 flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white">
@@ -56,7 +52,6 @@ const ProductGrid = ({ products, isLoading, error }: ProductGridProps) => {
     );
   }
 
-  // 4. Hiển thị lưới sản phẩm
   return (
     <AnimatePresence>
       <motion.div

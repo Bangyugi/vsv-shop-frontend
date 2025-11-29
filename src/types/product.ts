@@ -1,9 +1,7 @@
-// src/types/product.ts
-import type { ApiResponse } from "./index"; // <-- SỬA LỖI IMPORT
+import type { ApiResponse } from "./index";
 import type { ApiCategory } from "./category";
 import type { UserData } from "./auth";
 
-// ... (ApiSeller, ApiVariant... giữ nguyên) ...
 export interface ApiSeller {
   id: number;
   user: UserData;
@@ -30,7 +28,7 @@ export interface ApiProduct {
   images: string[];
   numRatings?: number;
   averageRating?: number;
-  totalSold: number; // <-- THÊM TRƯỜNG MỚI
+  totalSold: number;
   category: ApiCategory;
   seller?: ApiSeller;
   variants?: ApiVariant[];
@@ -63,7 +61,6 @@ export interface ProductApiParams {
   sortDir?: "ASC" | "DESC";
 }
 
-// ... (FrontendProduct giữ nguyên) ...
 export interface FrontendProduct {
   id: number;
   name: string;
@@ -117,9 +114,9 @@ export const mapApiProductToShoppingProduct = (
     gender: gender,
     sizes: sizes,
     material: "Unknown",
-    // --- THAY ĐỔI: Sử dụng totalSold thay vì numRatings ---
+
     sold: apiProduct.totalSold || 0,
-    // --- KẾT THÚC THAY ĐỔI ---
+
     brand: brand,
     isFavorite: false,
 
@@ -127,36 +124,24 @@ export const mapApiProductToShoppingProduct = (
   };
 };
 
-/**
- * Dữ liệu cho một variant khi TẠO sản phẩm
- * (Khớp với request mẫu của bạn)
- */
 export interface CreateProductVariant {
-  id: number; // Gửi 0 cho variant mới, gửi ID thật cho variant cũ (khi update)
+  id: number;
   sku: string;
   color: string;
   size: string;
   quantity: number;
 }
 
-// ... (Các interface còn lại giữ nguyên) ...
 export interface SellerProductFormValues {
   title: string;
   description: string;
   price: number;
   sellingPrice: number;
   categoryId: number;
-  images: string; // Chuỗi URL, phân cách bằng dấu phẩy
-  // --- THAY ĐỔI: Chuyển sang mảng variants ---
+  images: string;
   variants: CreateProductVariant[];
-  // --- XÓA: color, size, quantity ---
 }
-// --- KẾT THÚC CẬP NHẬT ---
 
-/**
- * Kiểu dữ liệu cho request body của API POST /api/products/create
- * (Khớp với request mẫu của bạn)
- */
 export interface CreateProductRequest {
   title: string;
   description: string;
@@ -168,10 +153,6 @@ export interface CreateProductRequest {
   variants: CreateProductVariant[];
 }
 
-/**
- * Kiểu dữ liệu cho request body của API PUT /api/products/{productId}
- * Dựa trên JSON mẫu của bạn.
- */
 export interface UpdateProductRequest {
   title: string;
   description: string;

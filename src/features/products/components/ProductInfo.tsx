@@ -1,4 +1,4 @@
-// src/features/products/components/ProductInfo.tsx
+
 import { useState, useMemo } from "react";
 import {
   Box,
@@ -21,9 +21,7 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import type { ProductDetail } from "../../../types";
 import { Add, Remove } from "@mui/icons-material";
 
-// --- Import useCart ---
 import { useCart } from "../../../contexts/CartContext";
-// --- Import useWishlist ---
 import { useWishlist } from "../../../contexts/WishlistContext";
 
 interface ProductInfoProps {
@@ -196,7 +194,7 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
         {product.name}
       </Typography>
 
-      {/* ... (SKU, Rating, Price... giữ nguyên) ... */}
+
       <Typography
         variant="body2"
         color="text.secondary"
@@ -247,9 +245,7 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
         {product.shortDescription}
       </Typography>
 
-      {/* --- XÓA: KHỐI THÔNG TIN SELLER ĐÃ BỊ XÓA KHỎI ĐÂY --- */}
 
-      {/* --- CẬP NHẬT: Phần chọn Màu (Loại bỏ nút Reset) --- */}
       <Box className="mb-5">
         <Typography
           variant="subtitle1"
@@ -258,7 +254,7 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
         >
           Color
         </Typography>
-        {/* --- XÓA: Box justify-between và Nút Reset --- */}
+
         <Box className="flex flex-wrap gap-2">
           {allColors.map((colorName) => {
             const isSelected = selectedColor === colorName;
@@ -290,9 +286,7 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
           })}
         </Box>
       </Box>
-      {/* --- KẾT THÚC CẬP NHẬT --- */}
 
-      {/* --- CẬP NHẬT: Phần chọn Size (Giữ nguyên, logic đã đúng) --- */}
       <Box className="mb-6">
         <Typography
           variant="subtitle1"
@@ -339,9 +333,7 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
           })}
         </ToggleButtonGroup>
       </Box>
-      {/* --- KẾT THÚC CẬP NHẬT --- */}
 
-      {/* ... (Phần chọn Quantity giữ nguyên, cập nhật disable) ... */}
       <Box className="mb-6">
         <Typography
           variant="subtitle1"
@@ -421,7 +413,6 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
         </Box>
       </Box>
 
-      {/* --- CẬP NHẬT: Nút Add to Cart --- */}
       <Box className="flex items-center gap-3">
         <Button
           variant="contained"
@@ -452,7 +443,6 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
         >
           {isCartLoading ? "Adding..." : "Add to Cart"}
         </Button>
-        {/* --- CẬP NHẬT: Nút Wishlist --- */}
         <IconButton
           aria-label="Add to wishlist"
           onClick={handleWishlistClick}
@@ -484,7 +474,7 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
         </IconButton>
       </Box>
 
-      {/* Snackbar cho lỗi local (giữ nguyên zIndex đã thêm) */}
+
       <Snackbar
         open={!!localError}
         autoHideDuration={4000}

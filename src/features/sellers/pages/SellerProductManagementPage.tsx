@@ -1,4 +1,3 @@
-// src/features/sellers/pages/SellerProductManagementPage.tsx
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
@@ -46,7 +45,6 @@ import type {
 import type { ApiCategory } from "../../../types/category";
 import SellerProductFormDialog from "../components/SellerProductFormDialog";
 
-// (SortOptions, CustomToolbarProps, CustomToolbar, formatCurrency giữ nguyên)
 const sortOptions = [
   { value: "id_asc", label: "ID: Tăng dần" },
   { value: "title_asc", label: "Tên: A-Z" },
@@ -126,7 +124,6 @@ const formatCurrency = (amount: number) => {
 };
 
 const SellerProductManagementPage = () => {
-  // (State giữ nguyên)
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rows, setRows] = useState<ApiProduct[]>([]);
@@ -156,7 +153,6 @@ const SellerProductManagementPage = () => {
 
   const navigate = useNavigate();
 
-  // (Các hàm fetch... và handle... giữ nguyên, ngoại trừ handleConfirmDelete)
   const fetchProducts = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -220,29 +216,25 @@ const SellerProductManagementPage = () => {
 
   const handleCloseDelete = () => setDeleteConfirmOpen(false);
 
-  // --- CẬP NHẬT: handleConfirmDelete ---
   const handleConfirmDelete = async () => {
     if (!productToDelete) return;
     try {
-      // Hàm này giờ đã gọi API thật
       await sellerService.deleteMyProduct(productToDelete.id);
       setSnackbar({
         open: true,
         message: "Product deleted successfully",
         severity: "success",
       });
-      fetchProducts(); // Tải lại danh sách
-      handleCloseDelete(); // Đóng dialog
+      fetchProducts(); 
+      handleCloseDelete(); 
     } catch (err: any) {
-      // Bắt lỗi từ API
       setSnackbar({
         open: true,
-        message: err.message || "Failed to delete product", // Hiển thị lỗi API
+        message: err.message || "Failed to delete product",
         severity: "error",
       });
     }
   };
-  // --- KẾT THÚC CẬP NHẬT ---
 
   const handleAddNew = () => {
     if (loadingCategories) {
@@ -268,7 +260,6 @@ const SellerProductManagementPage = () => {
   };
 
   const handleSubmitForm = async (values: SellerProductFormValues) => {
-    // ... (Giữ nguyên từ bước trước)
     const categoryName =
       allCategories.find((c) => c.id === values.categoryId)?.name || "Unknown";
     try {
@@ -302,7 +293,6 @@ const SellerProductManagementPage = () => {
 
   const handleCloseSnackbar = () => setSnackbar(null);
 
-  // (Columns definition giữ nguyên)
   const columns: GridColDef<ApiProduct>[] = [
     {
       field: "id",
@@ -388,7 +378,6 @@ const SellerProductManagementPage = () => {
 
   return (
     <>
-      {/* (Phần JSX còn lại (Header, Paper, DataGrid, Dialogs, Snackbar) giữ nguyên) */}
       <Box
         sx={{
           display: "flex",

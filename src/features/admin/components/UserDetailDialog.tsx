@@ -39,9 +39,6 @@ interface UserDetailDialogProps {
   isLoading: boolean;
 }
 
-/**
- * Hiển thị một item thông tin với icon (Không thay đổi)
- */
 const InfoItem: React.FC<{
   icon: React.ReactElement;
   label: string;
@@ -65,9 +62,6 @@ const InfoItem: React.FC<{
   </ListItem>
 );
 
-/**
- * Render các chip Role (Không thay đổi)
- */
 const renderRoleChips = (roles: UserRole[]) => {
   if (!roles || roles.length === 0) {
     return (
@@ -132,9 +126,6 @@ const renderRoleChips = (roles: UserRole[]) => {
   );
 };
 
-/**
- * Dialog hiển thị thông tin chi tiết của User với thiết kế mới.
- */
 const UserDetailDialog: React.FC<UserDetailDialogProps> = ({
   open,
   onClose,
@@ -167,7 +158,6 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({
 
     return (
       <Box>
-        {/* === Profile Header === */}
         <Box
           sx={{
             display: "flex",
@@ -190,13 +180,9 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({
           </Typography>
         </Box>
 
-        {/* --- XÓA Stack & Divider cũ tại đây --- */}
-
-        {/* === Thông tin chi tiết === */}
         <List sx={{ p: 0 }}>
           <InfoItem icon={<BadgeOutlined />} label="User ID" value={user.id} />
 
-          {/* --- THÊM: Status vào danh sách --- */}
           <InfoItem
             icon={
               user.enabled ? (
@@ -225,7 +211,6 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({
             }
           />
 
-          {/* --- THÊM: Roles vào danh sách --- */}
           <InfoItem
             icon={<AdminPanelSettingsOutlined color="action" />}
             label="Roles"

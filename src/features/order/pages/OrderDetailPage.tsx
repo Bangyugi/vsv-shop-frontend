@@ -177,7 +177,6 @@ const OrderDetailPage = () => {
         </Container>
       </Box>
 
-      {/* --- CẬP NHẬT: Truyền `orderItem` thay vì `product` --- */}
       {reviewingItem && (
         <ReviewDialog
           open={!!reviewingItem}
@@ -186,7 +185,6 @@ const OrderDetailPage = () => {
           onReviewSubmitted={handleReviewSubmitted}
         />
       )}
-      {/* --- KẾT THÚC CẬP NHẬT --- */}
 
       <Snackbar
         open={!!snackbar}

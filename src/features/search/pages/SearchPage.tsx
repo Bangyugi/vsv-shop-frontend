@@ -1,4 +1,3 @@
-// src/features/search/pages/SearchPage.tsx
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Box,
@@ -29,15 +28,12 @@ import FilterPanel from "../components/FilterPanel";
 import type { Filters } from "../components/FilterPanel";
 import ProductGrid from "../../shopping/components/ProductGrid";
 
-// --- Imports mới ---
 import * as productService from "../../../services/productService";
 import * as categoryService from "../../../services/categoryService";
 import type { ApiCategory } from "../../../types/category";
 import type { FrontendProduct, ProductApiParams } from "../../../types/product";
 import { mapApiProductToShoppingProduct } from "../../../types/product";
-// --- Kết thúc Imports mới ---
 
-// --- Helper hooks (Copy từ ShoppingPage) ---
 const useQueryState = <T,>(
   key: string,
   defaultValue: T,
@@ -77,7 +73,6 @@ const useQueryState = <T,>(
     if (serializer(valueFromUrlParsed) !== serializer(state)) {
       setState(valueFromUrlParsed);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, key, parser, serializer, defaultValue]);
 
   return [state, setQueryState] as const;
@@ -100,9 +95,7 @@ const parseRating = (val: string | null) => {
   const num = parseInt(val || "0", 10);
   return num > 0 ? num : null;
 };
-// --- Kết thúc Helper hooks ---
 
-// --- Constants (Đồng bộ với ShoppingPage) ---
 const ITEMS_PER_PAGE = 8;
 const MAX_PRICE_SLIDER = 500;
 const SORT_OPTIONS = [
@@ -113,7 +106,6 @@ const SORT_OPTIONS = [
   { value: "price_desc", label: "Price: High to Low" },
 ];
 
-// --- DEFAULT_FILTERS (Đồng bộ với FilterPanel mới) ---
 const DEFAULT_FILTERS: Filters = {
   categories: "",
   priceRange: [0, MAX_PRICE_SLIDER],
@@ -123,7 +115,6 @@ const DEFAULT_FILTERS: Filters = {
   sortBy: "latest",
 };
 
-// --- Helper (Copy từ ShoppingPage) ---
 const findCategoryIdByName = (
   categoryName: string | undefined,
   allCategories: ApiCategory[]
@@ -134,24 +125,19 @@ const findCategoryIdByName = (
   );
   return found?.id;
 };
-// ---
 
 const SearchPage = () => {
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
 
-  // --- State cho Categories ---
   const [allCategories, setAllCategories] = useState<ApiCategory[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
-  // const [categoryError, setCategoryError] = useState<string | null>(null);
 
-  // --- State cho Products ---
   const [products, setProducts] = useState<FrontendProduct[]>([]);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [productError, setProductError] = useState<string | null>(null);
 
-  // --- Hooks cho Query State ---
   const [searchTerm, setSearchTerm] = useQueryState(
     "q",
     "",
@@ -197,7 +183,6 @@ const SearchPage = () => {
     stringifyString
   );
 
-  // --- Build filters object từ state ---
   const filters: Filters = useMemo(
     () => ({
       categories: category,
@@ -210,11 +195,9 @@ const SearchPage = () => {
     [category, priceRange, rating, color, size, sortBy]
   );
 
-  // --- Fetch Categories ---
   useEffect(() => {
     const fetchCats = async () => {
       setLoadingCategories(true);
-      // setCategoryError(null);
       try {
         const response = await categoryService.getCategories();
         if (response.code === 200 && response.data) {
@@ -223,7 +206,6 @@ const SearchPage = () => {
           throw new Error(response.message || "Failed to fetch categories");
         }
       } catch (err: any) {
-        // setCategoryError(err.message || "Could not load category data.");
       } finally {
         setLoadingCategories(false);
       }
@@ -231,7 +213,6 @@ const SearchPage = () => {
     fetchCats();
   }, []);
 
-  // --- Fetch Products ---
   useEffect(() => {
     if (loadingCategories) {
       return;
@@ -323,7 +304,6 @@ const SearchPage = () => {
     filters.sortBy,
   ]);
 
-  // --- Handler functions ---
   const handleFilterChange = (name: keyof Filters, value: any) => {
     if (name === "categories") setCategory(value);
     else if (name === "priceRange") setPriceRange(value);
@@ -340,7 +320,6 @@ const SearchPage = () => {
     setColor(DEFAULT_FILTERS.colors);
     setSize(DEFAULT_FILTERS.sizes);
     setSortBy(DEFAULT_FILTERS.sortBy);
-    // Note: We don't clear searchTerm when clearing filters
   };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -355,7 +334,6 @@ const SearchPage = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // --- Drawer Content ---
   const drawerContent = (
     <Box
       sx={{
@@ -389,7 +367,7 @@ const SearchPage = () => {
           filters={filters}
           onFilterChange={handleFilterChange}
           onClearFilters={handleClearFilters}
-          allCategories={allCategories.filter((cat) => cat.level === 1)} // Chỉ truyền L1 categories
+          allCategories={allCategories.filter((cat) => cat.level === 1)}
           loadingCategories={loadingCategories}
         />
       </Box>
@@ -413,7 +391,6 @@ const SearchPage = () => {
       </Box>
     </Box>
   );
-  // ---
 
   return (
     <Box sx={{ bgcolor: "background.default", py: { xs: 3, md: 6 } }}>
@@ -487,7 +464,6 @@ const SearchPage = () => {
             </Box>
           </Paper>
 
-          {/* Thay thế logic render cũ bằng ProductGrid */}
           <motion.div layout>
             <ProductGrid
               products={products}

@@ -28,7 +28,7 @@ const HeroSection = () => {
           zIndex: -2,
         }}
       />
-      {/* Lớp overlay gradient */}
+      
       <Box
         sx={{
           position: "absolute",

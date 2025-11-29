@@ -1,4 +1,3 @@
-// src/features/seller/pages/BecomeSellerPage.tsx
 import {
   Box,
   Container,
@@ -17,7 +16,7 @@ import { motion } from "framer-motion";
 const BecomeSellerPage = () => {
   const { user, isAuthenticated, isLoading, refreshUserProfile } = useAuth();
   const navigate = useNavigate();
-  const [isSuccess, setIsSuccess] = useState(false); // Trạng thái khi gửi đơn thành công
+  const [isSuccess, setIsSuccess] = useState(false);
 
   if (isLoading) {
     return (
@@ -27,13 +26,11 @@ const BecomeSellerPage = () => {
     );
   }
 
-  // Chuyển hướng nếu chưa đăng nhập
   if (!isAuthenticated || !user) {
     navigate("/login", { state: { from: location } });
     return null;
   }
 
-  // Kiểm tra nếu đã là Seller hoặc Admin
   const isSeller = user.roles.some((role) => role.name === "ROLE_SELLER");
   const isAdmin = user.roles.some((role) => role.name === "ROLE_ADMIN");
 
@@ -80,7 +77,7 @@ const BecomeSellerPage = () => {
           <Button
             variant="contained"
             component={RouterLink}
-            to={isAdmin ? "/admin" : "/seller"} // TODO: Cập nhật link seller dashboard
+            to={isAdmin ? "/admin" : "/seller"}
           >
             {isAdmin ? "Go to Admin" : "Go to Dashboard"}
           </Button>
@@ -89,11 +86,10 @@ const BecomeSellerPage = () => {
     );
   }
 
-  // Xử lý khi form gửi thành công
   const handleSuccess = () => {
     setIsSuccess(true);
-    refreshUserProfile(); // Cập nhật AuthContext (có thể user-role đổi sang PENDING_SELLER)
-    window.scrollTo(0, 0); // Cuộn lên đầu
+    refreshUserProfile();
+    window.scrollTo(0, 0);
   };
 
   return (
@@ -103,12 +99,11 @@ const BecomeSellerPage = () => {
         background:
           "linear-gradient(135deg, rgba(230, 247, 250, 0.5) 0%, rgba(255, 240, 245, 0.5) 100%)",
         p: 2,
-        py: 6, // Thêm padding y
+        py: 6,
       }}
     >
       <Container maxWidth="md">
         {isSuccess ? (
-          // === Trạng thái Gửi Thành Công ===
           <Paper
             elevation={0}
             component={motion.div}
@@ -145,7 +140,6 @@ const BecomeSellerPage = () => {
             </Button>
           </Paper>
         ) : (
-          // === Trạng thái Form Đăng Ký ===
           <SellerRegistrationForm user={user} onSuccess={handleSuccess} />
         )}
       </Container>

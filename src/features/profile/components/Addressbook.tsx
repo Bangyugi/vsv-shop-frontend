@@ -23,15 +23,7 @@ import type {
   UpdateAddressRequest,
 } from "../../../types/address";
 import { useAuth } from "../../../contexts/AuthContext";
-// --- THÊM IMPORT MỚI ---
 import { mapApiAddressToUserAddress } from "../../../utils/addressUtils";
-// --- KẾT THÚC THÊM ---
-
-/**
- * --- XÓA HÀM TRÙNG LẶP ---
- */
-// const mapApiAddressToUserAddress = ( ... )
-// --- KẾT THÚC XÓA ---
 
 const AddressBook = () => {
   const { user } = useAuth();

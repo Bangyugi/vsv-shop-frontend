@@ -1,45 +1,34 @@
-// src/features/wishlist/pages/WishlistPage.tsx
-import { useMemo, useState } from "react"; // <-- THÊM useState
+import { useMemo, useState } from "react";
 import {
   Box,
   Button,
   Container,
   Grid,
   Typography,
-  // Snackbar, // <-- XÓA
   Alert,
-  CircularProgress, // Đã có
+  CircularProgress,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import WishlistItemCard from "../components/WishlistItemCard";
 import EmptyWishlist from "../components/EmptyWishlist";
 
-// --- Thay đổi Imports ---
-// import * as wishlistService from "../../../services/wishlistService"; // <-- XÓA
 import type {
   WishlistItemFE,
   WishlistApiProduct,
 } from "../../../types/wishlist";
-import { useWishlist } from "../../../contexts/WishlistContext"; // <-- THÊM
-import { useCart } from "../../../contexts/CartContext"; // <-- THÊM
-// --- Kết thúc thay đổi Imports ---
+import { useWishlist } from "../../../contexts/WishlistContext";
+import { useCart } from "../../../contexts/CartContext";
 
 const WishlistPage = () => {
-  // --- State mới (Sử dụng Context) ---
   const {
     wishlistData,
     isInitialLoading: isLoading,
     error,
     removeFromWishlist,
-    // fetchWishlist, // Có thể dùng để "refresh" nếu cần
   } = useWishlist();
-  // --- THÊM: State từ CartContext và loading local ---
   const { addToCart } = useCart();
   const [addingToCartId, setAddingToCartId] = useState<number | null>(null);
-  // --- Kết thúc State mới ---
-
-  // --- Map dữ liệu từ context ---
   const items = useMemo((): WishlistItemFE[] => {
     if (!wishlistData?.products) {
       return [];
@@ -49,38 +38,27 @@ const WishlistPage = () => {
       name: product.title,
       price: product.sellingPrice,
       image: product.images?.[0] || "/placeholder.png",
-      variants: product.variants, // <-- THÊM: Lấy variants
+      variants: product.variants,
     }));
   }, [wishlistData]);
-  // --- Kết thúc map ---
 
-  // --- Xóa useEffect fetch ---
-
-  // --- Cập nhật handleRemove ---
   const handleRemove = async (productId: number) => {
-    // Context sẽ tự động cập nhật UI và hiển thị snackbar
     await removeFromWishlist(productId);
   };
 
-  // --- Cập nhật handleAddToCart ---
   const handleAddToCart = async (item: WishlistItemFE) => {
     setAddingToCartId(item.id);
     const defaultVariant = item.variants?.[0];
 
     if (!defaultVariant) {
       console.error("No variants found for this wishlist item.");
-      // Gọi context với ID 0 để trigger lỗi (context sẽ hiển thị snackbar)
       await addToCart(0, 0);
     } else {
-      // Gọi context với variantId và số lượng 1
       await addToCart(defaultVariant.id, 1);
     }
     setAddingToCartId(null);
   };
 
-  // Xóa handleCloseSnackbar
-
-  // --- Hàm render nội dung (Cập nhật) ---
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -107,7 +85,6 @@ const WishlistPage = () => {
 
     return (
       <>
-        {/* --- Tiêu đề trang --- */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -133,23 +110,15 @@ const WishlistPage = () => {
           </Box>
         </motion.div>
 
-        {/* --- Lưới sản phẩm --- */}
         <Grid container spacing={3}>
           <AnimatePresence>
             {items.map((item, index) => (
-              <Grid
-                item
-                key={item.id}
-                xs={12}
-                sm={6}
-                md={4}
-                lg={3} // 4 sản phẩm/hàng trên desktop lớn
-              >
+              <Grid item key={item.id} xs={12} sm={6} md={4} lg={3}>
                 <WishlistItemCard
-                  item={item} // item giờ là WishlistItemFE
+                  item={item}
                   onRemove={handleRemove}
-                  onAddToCart={() => handleAddToCart(item)} // <-- CẬP NHẬT
-                  isAddingToCart={addingToCartId === item.id} // <-- THÊM
+                  onAddToCart={() => handleAddToCart(item)}
+                  isAddingToCart={addingToCartId === item.id}
                   index={index}
                 />
               </Grid>
@@ -159,7 +128,6 @@ const WishlistPage = () => {
       </>
     );
   };
-  // --- Kết thúc render nội dung ---
 
   return (
     <Box
@@ -170,8 +138,6 @@ const WishlistPage = () => {
       }}
     >
       <Container maxWidth="lg">{renderContent()}</Container>
-
-      {/* --- XÓA Snackbar --- */}
     </Box>
   );
 };

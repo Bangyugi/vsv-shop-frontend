@@ -68,7 +68,6 @@ const OrderSummary = ({
         Order Summary
       </Typography>
 
-      {/* --- CẬP NHẬT: Product List (Thêm SKU) --- */}
       <Box className="space-y-4" sx={{ mb: 4 }}>
         {items.map((item) => (
           <Box key={item.id} className="flex gap-3">
@@ -83,20 +82,17 @@ const OrderSummary = ({
               <Typography variant="body2" color="text.secondary">
                 Quantity: {item.quantity}
               </Typography>
-              {/* --- THÊM DÒNG NÀY --- */}
+
               <Typography variant="body2" color="text.secondary">
                 {item.sku}
               </Typography>
-              {/* --- KẾT THÚC THÊM --- */}
             </Box>
           </Box>
         ))}
       </Box>
-      {/* --- KẾT THÚC CẬP NHẬT --- */}
 
       <Divider sx={{ my: 2 }} />
 
-      {/* --- CẬP NHẬT: Totals (Dùng logic mới giống CartPage) --- */}
       <Box className="space-y-2">
         {showOriginalPrice && (
           <Box className="flex justify-between">
@@ -123,7 +119,6 @@ const OrderSummary = ({
           </Box>
         )}
 
-        {/* Subtotal là giá sau khi đã trừ tất cả discount */}
         <Box className="flex justify-between">
           <Typography color="text.secondary">Subtotal</Typography>
           <Typography className="font-semibold">
@@ -149,9 +144,7 @@ const OrderSummary = ({
           </Typography>
         </Box>
       </Box>
-      {/* --- KẾT THÚC CẬP NHẬT TOTALS --- */}
 
-      {/* Terms (Giữ nguyên) */}
       <FormControlLabel
         control={
           <Checkbox
@@ -163,7 +156,6 @@ const OrderSummary = ({
         sx={{ mt: 3, mb: 2 }}
       />
 
-      {/* Action Button (Giữ nguyên) */}
       <Button
         fullWidth
         variant="contained"

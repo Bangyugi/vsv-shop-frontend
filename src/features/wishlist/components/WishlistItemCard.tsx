@@ -1,4 +1,3 @@
-// src/features/wishlist/components/WishlistItemCard.tsx
 import {
   Card,
   CardMedia,
@@ -18,15 +17,12 @@ import type { WishlistItemFE } from "../../../types/wishlist";
 import { useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 
-// --- THAY ĐỔI: Format sang USD ---
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
   }).format(amount);
 };
-// --- KẾT THÚC THAY ĐỔI ---
-
 interface WishlistItemCardProps {
   item: WishlistItemFE;
 
@@ -130,7 +126,6 @@ const WishlistItemCard = ({
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
-                  {/* --- SỬA LỖI: Đã loại bỏ onClick={...} --- */}
                   <Button
                     variant="contained"
                     startIcon={<VisibilityOutlined />}
@@ -138,7 +133,6 @@ const WishlistItemCard = ({
                   >
                     View Details
                   </Button>
-                  {/* --- KẾT THÚC SỬA LỖI --- */}
                 </motion.div>
               )}
             </AnimatePresence>

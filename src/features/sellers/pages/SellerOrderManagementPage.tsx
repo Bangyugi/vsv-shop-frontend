@@ -1,4 +1,3 @@
-// src/features/sellers/pages/SellerOrderManagementPage.tsx
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
@@ -36,12 +35,9 @@ import {
   Search,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import * as sellerService from "../../../services/sellerService"; // <-- Dùng sellerService
+import * as sellerService from "../../../services/sellerService";
 import type { ApiOrderData, ApiOrderStatus } from "../../../types/order";
 import { format } from "date-fns";
-
-// (Các hàm getStatusChipProps, getNextStatusActions, CustomToolbar, formatCurrency...
-// được sao chép từ AdminOrderManagementPage)
 
 const getStatusChipProps = (
   status: ApiOrderStatus
@@ -97,7 +93,6 @@ const getStatusChipProps = (
   return statusMap[status] || statusMap["PENDING"];
 };
 
-// Logic cho Seller: Chỉ có thể xác nhận và gửi hàng
 const getNextSellerStatusActions = (currentStatus: ApiOrderStatus) => {
   const actions: { label: string; status: ApiOrderStatus }[] = [];
 
@@ -112,7 +107,6 @@ const getNextSellerStatusActions = (currentStatus: ApiOrderStatus) => {
     case "PROCESSING":
       actions.push({ label: "Mark as Shipped", status: "SHIPPED" });
       break;
-    // Seller không thể tự đánh dấu Delivered hoặc Returned
     case "SHIPPED":
     case "DELIVERED":
     case "CANCELLED":
@@ -122,14 +116,13 @@ const getNextSellerStatusActions = (currentStatus: ApiOrderStatus) => {
   return actions;
 };
 
-// Cell Actions
 const ActionButtonsCell: React.FC<
   GridRenderCellParams<ApiOrderData> & {
     onStatusUpdate: (orderId: string, newStatus: ApiOrderStatus) => void;
   }
 > = ({ row, onStatusUpdate }) => {
   const navigate = useNavigate();
-  const nextStatusActions = getNextSellerStatusActions(row.orderStatus); // <-- Dùng hàm của Seller
+  const nextStatusActions = getNextSellerStatusActions(row.orderStatus);
 
   const handleStatusChange = (event: SelectChangeEvent<ApiOrderStatus>) => {
     const newStatus = event.target.value as ApiOrderStatus;
@@ -138,9 +131,12 @@ const ActionButtonsCell: React.FC<
     }
   };
 
-  const isFinalStatus = ["SHIPPED", "DELIVERED", "CANCELLED", "RETURNED"].includes(
-    row.orderStatus
-  );
+  const isFinalStatus = [
+    "SHIPPED",
+    "DELIVERED",
+    "CANCELLED",
+    "RETURNED",
+  ].includes(row.orderStatus);
   const isStatusUpdatable = nextStatusActions.length > 0;
 
   return (
@@ -176,7 +172,6 @@ const ActionButtonsCell: React.FC<
           </MenuItem>
           <Divider />
           {nextStatusActions.map((action) => (
-            // (Render logic giữ nguyên)
             <MenuItem key={action.status} value={action.status}>
               {action.label}
             </MenuItem>
@@ -187,7 +182,6 @@ const ActionButtonsCell: React.FC<
   );
 };
 
-// (Filter và Toolbar giữ nguyên)
 type StatusFilter = ApiOrderStatus | "ALL";
 const allStatuses: ApiOrderStatus[] = [
   "PENDING",
@@ -309,13 +303,11 @@ const SellerOrderManagementPage = () => {
     setIsLoading(true);
     setError(null);
     try {
-      // Dùng service của Seller
       const response = await sellerService.getMySellOrders(
         paginationModel.page + 1,
         paginationModel.pageSize,
         statusFilter,
         searchTerm
-        // (sort mock chưa cần)
       );
       if (response.code === 200 && response.data) {
         setRows(response.data.pageContent);
@@ -348,7 +340,6 @@ const SellerOrderManagementPage = () => {
   const handleActionUpdateStatus = useCallback(
     async (orderId: string, newStatus: ApiOrderStatus) => {
       try {
-        // Dùng service của Seller
         const response = await sellerService.updateSellOrderStatus(
           orderId,
           newStatus
@@ -380,8 +371,6 @@ const SellerOrderManagementPage = () => {
   const handleCloseSnackbar = () => setSnackbar(null);
 
   const columns: GridColDef[] = [
-    // Các cột tương tự Admin, nhưng "Total" chỉ nên tính
-    // tiền hàng của Seller (logic này cần API hỗ trợ)
     {
       field: "orderId",
       headerName: "Order ID",
@@ -405,14 +394,14 @@ const SellerOrderManagementPage = () => {
         `${row.user?.firstName || ""} ${row.user?.lastName || ""}`,
     },
     {
-      field: "totalPrice", // Tạm dùng totalPrice của cả order
+      field: "totalPrice",
       headerName: "My Items Total",
       width: 120,
       type: "number",
       valueFormatter: (value: number) => formatCurrency(value || 0),
     },
     {
-      field: "totalItem", // Tạm dùng totalItem của cả order
+      field: "totalItem",
       headerName: "My Items",
       width: 80,
       type: "number",
@@ -495,7 +484,6 @@ const SellerOrderManagementPage = () => {
             ),
           }}
           sx={{
-            /* (styles giống admin) */
             border: "none",
             "& .MuiDataGrid-columnHeaders": {
               bgcolor: "background.default",

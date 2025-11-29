@@ -77,9 +77,7 @@ const PaymentMethod = ({ value, onChange }: PaymentMethodProps) => {
         Payment Method
       </Typography>
 
-      {/* --- THAY ĐỔI: Dùng prop `value` và `handleChange` --- */}
       <RadioGroup value={value} onChange={handleChange}>
-        {/* COD */}
         {renderPaymentOption(
           "cod",
           <LocalShippingOutlinedIcon />,
@@ -87,7 +85,6 @@ const PaymentMethod = ({ value, onChange }: PaymentMethodProps) => {
           "Pay with cash upon delivery"
         )}
 
-        {/* E-Wallet (Giả định là VNPAY) */}
         {renderPaymentOption(
           "vnpay-wallet",
           <AccountBalanceWalletOutlinedIcon />,
@@ -95,7 +92,6 @@ const PaymentMethod = ({ value, onChange }: PaymentMethodProps) => {
           "Pay securely via e-wallet"
         )}
 
-        {/* Credit Card (Giả định là VNPAY) */}
         {renderPaymentOption(
           "vnpay-card",
           <CreditCardOutlinedIcon />,
@@ -104,7 +100,6 @@ const PaymentMethod = ({ value, onChange }: PaymentMethodProps) => {
         )}
       </RadioGroup>
 
-      {/* Credit Card Form (Collapse) */}
       <Collapse in={value === "vnpay-card"} timeout="auto" unmountOnExit>
         <Box
           sx={{ mt: 3, p: 3, border: "1px solid #eee", borderRadius: "8px" }}

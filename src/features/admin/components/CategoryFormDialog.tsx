@@ -138,7 +138,6 @@ const CategoryFormDialog: React.FC<CategoryFormDialogProps> = ({
                   value={cat.id}
                   disabled={cat.id === initialData?.id}
                 >
-                  {/* Hiển thị level cho rõ ràng */}
                   (L{cat.level}) {cat.name}
                 </MenuItem>
               ))}

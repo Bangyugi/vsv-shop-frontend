@@ -1,4 +1,3 @@
-// src/utils/addressUtils.ts
 import type { ApiAddress } from "../types/address";
 import type { UserAddress } from "../types";
 import type { UserData } from "../types/auth";

@@ -104,7 +104,6 @@ const SellerHeader: React.FC<SellerHeaderProps> = ({
         ></Typography>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          {/* --- 4. NÚT CHUÔNG THÔNG BÁO --- */}
           <IconButton color="inherit" onClick={handleNotifMenuOpen}>
             <Badge badgeContent={notificationCount} color="error">
               <NotificationsOutlined />
@@ -128,8 +127,6 @@ const SellerHeader: React.FC<SellerHeaderProps> = ({
               sx={{ width: 40, height: 40 }}
             />
           </IconButton>
-
-          {/* --- 5. MENU CHO NOTIFICATION --- */}
           <Menu
             anchorEl={notifMenuAnchor}
             id="notification-menu"
@@ -171,7 +168,6 @@ const SellerHeader: React.FC<SellerHeaderProps> = ({
               <Typography variant="h6" className="font-semibold">
                 Notifications
               </Typography>
-              {/* (Nút "Mark all as read" có thể thêm sau) */}
             </Box>
             <Divider />
             <List sx={{ p: 0, maxHeight: 400, overflowY: "auto" }}>
@@ -201,11 +197,9 @@ const SellerHeader: React.FC<SellerHeaderProps> = ({
                   />
                 </ListItem>
               )}
-              {/* (Các thông báo khác về review, tin nhắn... có thể lặp ở đây) */}
             </List>
           </Menu>
 
-          {/* --- 6. MENU CHO ACCOUNT (Đổi tên state) --- */}
           <Menu
             anchorEl={accountMenuAnchor}
             id="account-menu"
@@ -241,7 +235,6 @@ const SellerHeader: React.FC<SellerHeaderProps> = ({
             transformOrigin={{ horizontal: "right", vertical: "top" }}
             anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
           >
-            {/* (Giữ nguyên các MenuItem của account) */}
             <MenuItem
               disabled
               sx={{

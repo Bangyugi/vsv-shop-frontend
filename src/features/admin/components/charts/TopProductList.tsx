@@ -127,9 +127,7 @@ const TopProductList: React.FC = () => {
                     {index + 1}. {product.name}
                   </Typography>
                 }
-                // --- SỬA LỖI: Thêm prop secondaryTypographyProps ---
                 secondaryTypographyProps={{ component: "div" }}
-                // --- KẾT THÚC SỬA LỖI ---
                 secondary={
                   <Box className="flex items-center">
                     <SellOutlined

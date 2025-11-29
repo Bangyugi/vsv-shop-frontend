@@ -79,7 +79,6 @@ const OrderHeader = ({ orderId, orderDate, status }: OrderHeaderProps) => {
           Order Details
         </Typography>
         <Box className="flex items-center gap-3 mt-2">
-          {/* --- SỬA: Hiển thị UUID --- */}
           <Typography className="font-semibold">#{orderId}</Typography>
           <Typography color="text.secondary">
             Placed on: {new Date(orderDate).toLocaleDateString("en-US")}

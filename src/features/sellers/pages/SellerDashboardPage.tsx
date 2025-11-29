@@ -1,4 +1,3 @@
-// src/features/sellers/pages/SellerDashboardPage.tsx
 import React from "react";
 import { Box, Grid, Paper, Typography, Button, Stack } from "@mui/material";
 import {
@@ -6,16 +5,14 @@ import {
   ShoppingCartOutlined,
   Inventory2Outlined,
   HourglassTopOutlined,
-  Add, // <-- THÊM
-  ListAlt, // <-- THÊM
+  Add,
+  ListAlt,
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
-import { Link as RouterLink } from "react-router-dom"; // <-- THÊM
-// Import các biểu đồ đã sao chép
+import { Link as RouterLink } from "react-router-dom";
 import RevenueChart from "../components/charts/RevenueChart";
 import TopProductList from "../components/charts/TopProductList";
 
-// Component thẻ thống kê (Giống hệt admin)
 const StatCard: React.FC<{
   title: string;
   value: string;
@@ -59,7 +56,6 @@ const StatCard: React.FC<{
   </Paper>
 );
 
-// Dữ liệu giả cho Seller (Sẽ thay bằng API)
 const stats = [
   {
     title: "My Total Revenue",
@@ -119,7 +115,6 @@ const SellerDashboardPage = () => {
         Seller Dashboard
       </Typography>
 
-      {/* Grid cho các thẻ thống kê */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {stats.map((stat) => (
           <Grid
@@ -141,9 +136,7 @@ const SellerDashboardPage = () => {
         ))}
       </Grid>
 
-      {/* Grid cho biểu đồ và Quick Actions */}
       <Grid container spacing={3}>
-        {/* Biểu đồ doanh thu */}
         <Grid
           item
           xs={12}
@@ -154,10 +147,8 @@ const SellerDashboardPage = () => {
           <RevenueChart />
         </Grid>
 
-        {/* Quick Actions & Top Products */}
         <Grid item xs={12} lg={4}>
           <Stack spacing={3}>
-            {/* THÊM MỚI: Quick Actions */}
             <Grid item component={motion.div} variants={itemVariants}>
               <Paper
                 elevation={0}
@@ -176,7 +167,7 @@ const SellerDashboardPage = () => {
                     variant="contained"
                     startIcon={<Add />}
                     component={RouterLink}
-                    to="/seller/products" // Dẫn đến trang quản lý, nơi có nút Add
+                    to="/seller/products"
                   >
                     Add New Product
                   </Button>
@@ -184,16 +175,13 @@ const SellerDashboardPage = () => {
                     variant="outlined"
                     startIcon={<ListAlt />}
                     component={RouterLink}
-                    to="/seller/orders" // Dẫn đến trang đơn hàng
+                    to="/seller/orders"
                   >
                     View Pending Orders
                   </Button>
                 </Stack>
               </Paper>
             </Grid>
-            {/* KẾT THÚC THÊM MỚI */}
-
-            {/* Top Products */}
             <Grid item component={motion.div} variants={itemVariants}>
               <TopProductList />
             </Grid>

@@ -27,9 +27,6 @@ import * as productService from "./productService";
 const BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
 
-/**
- * Đăng ký làm Seller (Giữ nguyên)
- */
 export const registerAsSeller = (
   data: SellerRegistrationRequest
 ): Promise<SellerRegistrationResponse> => {
@@ -38,10 +35,6 @@ export const registerAsSeller = (
     .then((res) => res.data);
 };
 
-/**
- * Lấy thông tin profile của Seller
- * API: GET /api/sellers/my-profile
- */
 export const getMySellerProfile = (): Promise<ApiResponse<ApiSellerData>> => {
   return api
     .get<ApiResponse<ApiSellerData>>(`${BASE_URL}/sellers/profile`)
@@ -52,10 +45,6 @@ export const getMySellerProfile = (): Promise<ApiResponse<ApiSellerData>> => {
     });
 };
 
-/**
- * Cập nhật profile của Seller
- * API: PUT /api/sellers/update/{sellerId}
- */
 export const updateMySellerProfile = (
   sellerId: number,
   data: SellerRegistrationRequest
@@ -73,10 +62,6 @@ export const updateMySellerProfile = (
     });
 };
 
-/**
- * Lấy danh sách sản phẩm CỦA Seller
- * (Giữ nguyên API thật)
- */
 export const getMyProducts = (
   page: number,
   size: number,
@@ -114,10 +99,6 @@ export const getMyProducts = (
     });
 };
 
-/**
- * Thêm một sản phẩm mới (Sử dụng API thật)
- * (Giữ nguyên)
- */
 export const addMyProduct = (
   data: SellerProductFormValues,
   categoryName: string
@@ -140,10 +121,6 @@ export const addMyProduct = (
   return productService.createProduct(requestBody);
 };
 
-/**
- * Cập nhật sản phẩm (Sử dụng API thật)
- * (Giữ nguyên)
- */
 export const updateMyProduct = (
   productId: number,
   data: SellerProductFormValues,
@@ -168,10 +145,6 @@ export const updateMyProduct = (
   return productService.updateProduct(productId, requestBody);
 };
 
-/**
- * Xóa sản phẩm (Sử dụng API thật)
- * (Giữ nguyên)
- */
 export const deleteMyProduct = (
   productId: number
 ): Promise<ApiResponse<null>> => {
@@ -179,10 +152,6 @@ export const deleteMyProduct = (
   return productService.deleteProduct(productId);
 };
 
-/**
- * Lấy danh sách đơn hàng CỦA Seller (API Thật)
- * API: GET /api/orders/seller
- */
 export const getMySellOrders = (
   page: number,
   size: number,
@@ -226,10 +195,6 @@ export const getMySellOrders = (
     });
 };
 
-/**
- * Seller cập nhật trạng thái đơn hàng (của họ) (API Thật)
- * API: PATCH /api/orders/seller/uuid/{orderUuid}/status
- */
 export const updateSellOrderStatus = (
   orderId: string,
   newStatus: ApiOrderStatus
@@ -247,11 +212,6 @@ export const updateSellOrderStatus = (
     });
 };
 
-/**
- * Lấy tóm tắt thông báo cho seller (ví dụ: số đơn hàng PENDING)
- * (Giả định API)
- * API: GET /api/sellers/notifications/summary
- */
 export const getNotificationSummary =
   (): Promise<GetNotificationSummaryResponse> => {
     return api

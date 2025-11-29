@@ -37,7 +37,6 @@ const RevenueChart: React.FC = () => {
         Revenue Analytics (Last 6 Months)
       </Typography>
       <Box sx={{ width: "100%", height: 320 }}>
-        {/* Sử dụng Recharts để tạo biểu đồ đơn giản */}
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={mockRevenueData}

@@ -211,7 +211,6 @@ const FilterPanel = ({
         Clear All
       </Button>
 
-      {/* Sort By (Giữ nguyên từ SearchPage cũ) */}
       {renderFilterSection(
         "Sort By",
         <RadioGroup
@@ -231,7 +230,6 @@ const FilterPanel = ({
         true
       )}
 
-      {/* Category (Đồng bộ logic: RadioGroup L1) */}
       {renderFilterSection(
         "Category",
         loadingCategories ? (
@@ -263,7 +261,6 @@ const FilterPanel = ({
         true
       )}
 
-      {/* Price Range (Đồng bộ logic) */}
       {renderFilterSection(
         "Price Range",
         <>
@@ -316,7 +313,6 @@ const FilterPanel = ({
         </>
       )}
 
-      {/* Color (Đồng bộ logic) */}
       {renderFilterSection(
         "Color",
         <Box className="flex flex-wrap gap-2">
@@ -369,7 +365,6 @@ const FilterPanel = ({
         </Box>
       )}
 
-      {/* Size (Đồng bộ logic) */}
       {renderFilterSection(
         "Size",
         <Box className="flex flex-wrap gap-1">
@@ -401,7 +396,6 @@ const FilterPanel = ({
         </Box>
       )}
 
-      {/* Rating (Đồng bộ logic) */}
       {renderFilterSection(
         "Rating",
         <RadioGroup value={filters.rating ?? ""} onChange={handleRatingChange}>

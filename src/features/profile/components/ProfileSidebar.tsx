@@ -69,15 +69,11 @@ const ProfileSidebar = ({
             sx={{ borderRadius: "20px", fontSize: "0.7rem", py: 0.5, px: 1.5 }}
           >
             Change
-            <input
-              type="file"
-              hidden
-              accept="image/*" /* onChange={handleAvatarChange} */
-            />
+            <input type="file" hidden accept="image/*" />
           </Button>
         </Box>
         <Typography variant="h6" className="font-bold">
-          {userName} {/* Dùng prop */}
+          {userName}
         </Typography>
       </Box>
 
@@ -107,7 +103,7 @@ const ProfileSidebar = ({
             </ListItemButton>
           </ListItem>
         ))}
-        {/* --- 3. Cập nhật nút Logout --- */}
+
         <ListItem disablePadding sx={{ mt: 2 }}>
           <ListItemButton onClick={handleLogout} sx={{ borderRadius: "8px" }}>
             <ListItemIcon sx={{ minWidth: 40 }}>

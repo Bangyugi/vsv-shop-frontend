@@ -1,8 +1,5 @@
-// src/types/wishlist.ts
-// --- THAY ĐỔI: Sửa lỗi import ---
 import type { ApiResponse } from "./index";
 import type { UserData } from "./auth";
-// --- KẾT THÚC THAY ĐỔI ---
 import type { ApiVariant } from "../types/product";
 
 export interface WishlistApiProduct {

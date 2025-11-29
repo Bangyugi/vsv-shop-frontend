@@ -106,7 +106,6 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
       </List>
       <Divider sx={{ mt: 2 }} />
       <List sx={{ p: 1.5 }}>
-        {/* --- THÊM NÚT GO TO HOMEPAGE --- */}
         <ListItem disablePadding>
           <ListItemButton
             component={NavLink}
@@ -120,7 +119,6 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
             <ListItemText primary="View Site" />
           </ListItemButton>
         </ListItem>
-        {/* --- KẾT THÚC THÊM --- */}
 
         <ListItem disablePadding>
           <ListItemButton
@@ -142,7 +140,6 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
       component="nav"
       sx={{ width: { lg: drawerWidth }, flexShrink: { lg: 0 } }}
     >
-      {/* Mobile Drawer */}
       <Drawer
         variant="temporary"
         open={mobileOpen}
@@ -162,7 +159,6 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
         {drawerContent}
       </Drawer>
 
-      {/* Desktop Drawer */}
       <Drawer
         variant="permanent"
         sx={{

@@ -1,4 +1,3 @@
-// src/features/wishlist/components/EmptyWishlist.tsx
 import { Box, Button, Typography } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import HeartBrokenOutlinedIcon from "@mui/icons-material/HeartBrokenOutlined";
@@ -14,7 +13,7 @@ const EmptyWishlist = () => {
       <Box
         className="flex flex-col items-center justify-center text-center p-8 rounded-xl gap-3"
         sx={{
-          bgcolor: "background.paper", // Nền trắng
+          bgcolor: "background.paper",
           minHeight: "50vh",
           border: "1px dashed #ddd",
         }}
@@ -30,7 +29,7 @@ const EmptyWishlist = () => {
         </Typography>
         <Button
           component={RouterLink}
-          to="/" // Link về trang chủ hoặc trang sản phẩm
+          to="/"
           variant="contained"
           size="large"
           sx={{

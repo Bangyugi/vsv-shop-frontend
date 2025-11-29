@@ -96,13 +96,12 @@ const ProductCard = ({ product, index }: ProductCardProps) => {
           >
             {formatCurrency(displayPrice)}
           </Typography>
-          {/* --- THÊM KHỐI NÀY --- */}
+
           <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
             Đã bán: {product.sold}
           </Typography>
-          {/* --- KẾT THÚC KHỐI THÊM --- */}
         </CardContent>
-        {/* --- CẬP NHẬT: Card Actions --- */}
+
         <CardActions className="justify-center" sx={{ pb: 2 }}>
           <Button
             size="small"
@@ -118,7 +117,6 @@ const ProductCard = ({ product, index }: ProductCardProps) => {
             )}
           </Button>
         </CardActions>
-        {/* --- KẾT THÚC CẬP NHẬT --- */}
       </Card>
     </motion.div>
   );

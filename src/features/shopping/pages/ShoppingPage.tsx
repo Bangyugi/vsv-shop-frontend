@@ -1,4 +1,3 @@
-// src/features/shopping/pages/ShoppingPage.tsx
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Box,

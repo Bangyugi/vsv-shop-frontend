@@ -1,4 +1,3 @@
-// Đây là file "nguồn chân lý" cho theme của bạn
 export const colors = {
   primary: "#00bfa6",
   secondary: "#ffb300",

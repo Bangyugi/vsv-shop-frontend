@@ -235,7 +235,6 @@ const SellerRegistrationForm: React.FC<SellerRegistrationFormProps> = ({
       }}
     >
       <Box component="form" onSubmit={formik.handleSubmit} noValidate>
-        {/* (Phần Header, Stepper, Divider giữ nguyên) */}
         <Typography
           variant="h4"
           component="h1"
@@ -279,7 +278,6 @@ const SellerRegistrationForm: React.FC<SellerRegistrationFormProps> = ({
             exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.3 }}
           >
-            {/* --- Bước 1: Business Details (Giữ nguyên) --- */}
             {activeStep === 0 && (
               <Grid container spacing={2}>
                 <Grid item xs={12}>
@@ -391,10 +389,8 @@ const SellerRegistrationForm: React.FC<SellerRegistrationFormProps> = ({
               </Grid>
             )}
 
-            {/* --- Bước 2: Pickup Address (CẬP NHẬT) --- */}
             {activeStep === 1 && (
               <Grid container spacing={2}>
-                {/* (Các trường fullName, phoneNumber, email giữ nguyên) */}
                 <Grid item xs={12}>
                   <Typography
                     variant="h6"
@@ -450,7 +446,6 @@ const SellerRegistrationForm: React.FC<SellerRegistrationFormProps> = ({
                   />
                 </Grid>
 
-                {/* Province / City */}
                 <Grid item xs={12} sm={6}>
                   <FormControl
                     fullWidth
@@ -478,7 +473,6 @@ const SellerRegistrationForm: React.FC<SellerRegistrationFormProps> = ({
                   </FormControl>
                 </Grid>
 
-                {/* District */}
                 <Grid item xs={12} sm={6}>
                   <FormControl
                     fullWidth
@@ -507,7 +501,6 @@ const SellerRegistrationForm: React.FC<SellerRegistrationFormProps> = ({
                   </FormControl>
                 </Grid>
 
-                {/* (Các trường address, country, note giữ nguyên) */}
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
@@ -551,7 +544,6 @@ const SellerRegistrationForm: React.FC<SellerRegistrationFormProps> = ({
               </Grid>
             )}
 
-            {/* --- Bước 3: Bank & Tax (Giữ nguyên) --- */}
             {activeStep === 2 && (
               <Grid container spacing={2}>
                 <Grid item xs={12}>
@@ -648,7 +640,6 @@ const SellerRegistrationForm: React.FC<SellerRegistrationFormProps> = ({
           </motion.div>
         </AnimatePresence>
 
-        {/* Nút điều hướng (Giữ nguyên) */}
         <Box sx={{ display: "flex", justifyContent: "space-between", mt: 5 }}>
           <Button
             variant="outlined"

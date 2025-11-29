@@ -1,4 +1,3 @@
-// src/features/shopping/components/FilterSideBar.tsx
 import { useState, useEffect } from "react";
 import {
   Box,
@@ -6,11 +5,6 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  // --- THAY ĐỔI: Bỏ FormGroup, Checkbox ---
-  // FormGroup,
-  // FormControlLabel,
-  // Checkbox,
-  // --- THÊM: Thêm RadioGroup, Radio, FormControlLabel ---
   RadioGroup,
   Radio,
   FormControlLabel,
@@ -29,13 +23,12 @@ import {
   ExpandMore,
   FilterListOff,
   Check as CheckIcon,
-  RadioButtonUnchecked, // Thêm icon cho "All"
+  RadioButtonUnchecked,
 } from "@mui/icons-material";
 
 import * as categoryService from "../../../services/categoryService";
 import type { ApiCategory } from "../../../types/category";
 
-// const availableGenders = ["Men", "Women", "Unisex"];
 const availableSizes = [
   "S",
   "M",
@@ -85,15 +78,13 @@ const isColorDark = (hex: string) => {
 };
 
 export interface Filters {
-  // --- THAY ĐỔI: Chuyển từ mảng sang string (hoặc string | null) ---
-  // "" hoặc null sẽ có nghĩa là "All"
   categories: string;
-  brands?: string[]; // Giữ nguyên brand nếu cần multi-select
+  brands?: string[];
   priceRange: [number, number];
   rating: number | null;
   colors: string;
   sizes: string;
-  gender: string; // Chuyển từ mảng sang string
+  gender: string;
 }
 
 interface FilterSidebarProps {
@@ -166,17 +157,10 @@ const FilterSidebar = ({
     }
   }, [parentCategoryId]);
 
-  // --- BỎ: createMultiSelectHandler ---
-
-  // --- THÊM: Handler cho RadioGroup (hoặc có thể dùng inline) ---
   const handleCategoryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     onFilterChange("categories", event.target.value);
   };
-  // const handleGenderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   onFilterChange("gender", event.target.value);
-  // };
 
-  // (Các hàm handle price giữ nguyên)
   const handlePriceSliderChange = (
     _event: Event,
     newValue: number | number[]
@@ -213,7 +197,6 @@ const FilterSidebar = ({
     onFilterChange("priceRange", [minVal, maxVal]);
   };
 
-  // (Hàm handle rating giữ nguyên)
   const handleRatingChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     if (value === "") {
@@ -240,7 +223,6 @@ const FilterSidebar = ({
         </Button>
       </Box>
 
-      {/* --- CẬP NHẬT: CATEGORY (RadioGroup) --- */}
       <Accordion defaultExpanded>
         <AccordionSummary expandIcon={<ExpandMore />}>
           <Typography className="font-semibold">Category</Typography>
@@ -282,9 +264,8 @@ const FilterSidebar = ({
               value={filters.categories}
               onChange={handleCategoryChange}
             >
-              {/* Thêm lựa chọn "Tất cả" */}
               <FormControlLabel
-                value="" // Giá trị rỗng đại diện cho "Tất cả"
+                value=""
                 control={<Radio size="small" />}
                 label="All Subcategories"
                 sx={{
@@ -294,7 +275,7 @@ const FilterSidebar = ({
               {level3Categories.map((category) => (
                 <FormControlLabel
                   key={category.id}
-                  value={category.name} // Value là tên
+                  value={category.name}
                   control={<Radio size="small" />}
                   label={category.name}
                   sx={{
@@ -307,17 +288,15 @@ const FilterSidebar = ({
         </AccordionDetails>
       </Accordion>
 
-      {/* --- CẬP NHẬT: COLOR (Single Select) --- */}
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMore />}>
           <Typography className="font-semibold">Color</Typography>
         </AccordionSummary>
         <AccordionDetails sx={{ pt: 0 }}>
           <Box className="flex flex-wrap gap-2">
-            {/* Thêm nút "All Colors" */}
             <Tooltip title="All Colors">
               <IconButton
-                onClick={() => onFilterChange("colors", "")} // Set về rỗng
+                onClick={() => onFilterChange("colors", "")}
                 sx={{
                   width: 28,
                   height: 28,
@@ -330,12 +309,12 @@ const FilterSidebar = ({
               </IconButton>
             </Tooltip>
             {availableColors.map((color) => {
-              const isSelected = filters.colors === color.name; // So sánh trực tiếp
+              const isSelected = filters.colors === color.name;
               const isDark = isColorDark(color.hex);
               return (
                 <Tooltip title={color.name} key={color.name}>
                   <Box
-                    onClick={() => onFilterChange("colors", color.name)} // Set giá trị, không toggle
+                    onClick={() => onFilterChange("colors", color.name)}
                     sx={{
                       width: 28,
                       height: 28,
@@ -374,18 +353,16 @@ const FilterSidebar = ({
         </AccordionDetails>
       </Accordion>
 
-      {/* --- CẬP NHẬT: SIZE (Single Select) --- */}
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMore />}>
           <Typography className="font-semibold">Size</Typography>
         </AccordionSummary>
         <AccordionDetails sx={{ pt: 0 }}>
           <Box className="flex flex-wrap gap-1">
-            {/* Thêm Chip "All Sizes" */}
             <Chip
               label="All Sizes"
               clickable
-              onClick={() => onFilterChange("sizes", "")} // Set về rỗng
+              onClick={() => onFilterChange("sizes", "")}
               size="small"
               sx={{
                 m: 0.3,
@@ -403,7 +380,7 @@ const FilterSidebar = ({
                 key={size}
                 label={size}
                 clickable
-                onClick={() => onFilterChange("sizes", size)} // Set giá trị, không toggle
+                onClick={() => onFilterChange("sizes", size)}
                 size="small"
                 sx={{
                   m: 0.3,
@@ -422,7 +399,6 @@ const FilterSidebar = ({
         </AccordionDetails>
       </Accordion>
 
-      {/* (Price Range giữ nguyên) */}
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMore />}>
           <Typography className="font-semibold">Price Range</Typography>
@@ -491,7 +467,6 @@ const FilterSidebar = ({
         </AccordionDetails>
       </Accordion>
 
-      {/* (Rating giữ nguyên) */}
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMore />}>
           <Typography className="font-semibold">Rating</Typography>

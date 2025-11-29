@@ -1,4 +1,3 @@
-// src/App.tsx
 import { Box, Snackbar, Alert } from "@mui/material";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
@@ -40,16 +39,11 @@ import SellerRoute from "./components/common/SellerRoute";
 import SellerLayout from "./features/sellers/layouts/SellerLayout";
 import SellerDashboardPage from "./features/sellers/pages/SellerDashboardPage";
 
-// --- THÊM IMPORT MỚI ---
 import SellerProductManagementPage from "./features/sellers/pages/SellerProductManagementPage";
 import SellerOrderManagementPage from "./features/sellers/pages/SellerOrderManagementPage";
 import SellerAnalyticsPage from "./features/sellers/pages/SellerAnalyticsPage";
 import SellerProfilePage from "./features/sellers/pages/SellerProfilePage";
-// --- KẾT THÚC THÊM ---
 
-/**
- * Component Layout Quyết định hiển thị Navbar/Footer hay không
- */
 const LayoutManager: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -88,7 +82,6 @@ function App() {
     <Box className="flex flex-col min-h-screen">
       <LayoutManager>
         <Routes>
-          {/* === Admin Routes (Được bảo vệ) === */}
           <Route element={<AdminRoute />}>
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<DashboardPage />} />
@@ -101,12 +94,10 @@ function App() {
             </Route>
           </Route>
 
-          {/* === CẬP NHẬT: Seller Routes (Được bảo vệ) === */}
           <Route element={<SellerRoute />}>
             <Route path="/seller" element={<SellerLayout />}>
               <Route index element={<SellerDashboardPage />} />
               <Route path="dashboard" element={<SellerDashboardPage />} />
-              {/* Thay thế placeholder bằng trang thật */}
               <Route
                 path="products"
                 element={<SellerProductManagementPage />}
@@ -117,9 +108,7 @@ function App() {
               <Route path="*" element={<SellerDashboardPage />} />
             </Route>
           </Route>
-          {/* --- KẾT THÚC CẬP NHẬT --- */}
 
-          {/* === Public & User Routes === */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -140,8 +129,6 @@ function App() {
           <Route path="/become-seller" element={<BecomeSellerPage />} />
         </Routes>
       </LayoutManager>
-
-      {/* Global Snackbars (Giữ nguyên) */}
       <Snackbar
         open={cartSnackbar?.open}
         autoHideDuration={4000}

@@ -1,4 +1,3 @@
-// src/features/profile/pages/UserProfilePage.tsx
 import {
   Box,
   Container,
@@ -9,11 +8,9 @@ import {
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { AnimatePresence, motion } from "framer-motion";
-// import { mockUser } from "../../../data/profileData"; // <-- 1. XÓA import mockUser
-import { useSearchParams, Navigate } from "react-router-dom"; // <-- 2. Thêm Navigate
-import { useAuth } from "../../../contexts/AuthContext"; // <-- 3. IMPORT useAuth
+import { useSearchParams, Navigate } from "react-router-dom";
+import { useAuth } from "../../../contexts/AuthContext";
 
-// Import các components con
 import ProfileSidebar from "../components/ProfileSidebar";
 import AccountDetails from "../components/AccountDetails";
 import AddressBook from "../components/Addressbook";
@@ -21,7 +18,6 @@ import OrderHistory from "../components/OrderHistory";
 import ProfileWishlist from "../components/ProfileWishlist";
 import SecuritySettings from "../components/SecuritySetting";
 
-// Định nghĩa các tab
 export type ProfileTab =
   | "account"
   | "addresses"
@@ -29,7 +25,6 @@ export type ProfileTab =
   | "wishlist"
   | "security";
 
-// Mảng các tab hợp lệ để kiểm tra
 const validTabs: ProfileTab[] = [
   "account",
   "addresses",
@@ -42,9 +37,8 @@ const UserProfilePage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const { user, isAuthenticated, isLoading } = useAuth(); // <-- 4. LẤY user, isAuthenticated, isLoading từ context
+  const { user, isAuthenticated, isLoading } = useAuth();
 
-  // --- Tính toán activeTab từ URL ---
   const getActiveTabFromUrl = (): ProfileTab => {
     const tabFromUrl = searchParams.get("tab") as ProfileTab;
     return validTabs.includes(tabFromUrl) ? tabFromUrl : "account";
@@ -52,12 +46,10 @@ const UserProfilePage = () => {
 
   const activeTab = getActiveTabFromUrl();
 
-  // --- Hàm cập nhật URL ---
   const handleTabChange = (tab: ProfileTab) => {
     setSearchParams({ tab: tab });
   };
 
-  // --- 5. Xử lý trạng thái Loading và Chưa xác thực ---
   if (isLoading) {
     return (
       <Box
@@ -71,17 +63,14 @@ const UserProfilePage = () => {
     );
   }
 
-  // Nếu không loading và không xác thực (hoặc user là null), chuyển hướng về login
   if (!isAuthenticated || !user) {
-    // Bạn có thể lưu lại trang hiện tại để redirect về sau khi login
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
-  // --- Kết thúc xử lý ---
 
   const renderContent = () => {
     switch (activeTab) {
       case "account":
-        return <AccountDetails />; // AccountDetails sẽ tự lấy user từ context
+        return <AccountDetails />;
       case "addresses":
         return <AddressBook />;
       case "orders":
@@ -99,19 +88,15 @@ const UserProfilePage = () => {
     <Box sx={{ bgcolor: "background.default", py: { xs: 4, md: 8 } }}>
       <Container maxWidth="lg">
         <Grid container spacing={4}>
-          {/* --- Sidebar (Cột Trái) --- */}
           <Grid item xs={12} md={4}>
             <ProfileSidebar
-              // userAvatar={mockUser.avatar} // <-- 6. XÓA dòng này
-              // userName={mockUser.fullName} // <-- 6. XÓA dòng này
-              userAvatar={user.avatar} // <-- 7. DÙNG user từ context
-              userName={`${user.firstName} ${user.lastName}`} // <-- 7. DÙNG user từ context
+              userAvatar={user.avatar}
+              userName={`${user.firstName} ${user.lastName}`}
               activeTab={activeTab}
               onTabChange={handleTabChange}
             />
           </Grid>
 
-          {/* --- Content (Cột Phải) --- */}
           <Grid item xs={12} md={8}>
             {isMobile ? (
               <Box sx={{ overflow: "hidden" }}>
@@ -134,8 +119,8 @@ const UserProfilePage = () => {
                 sx={{
                   p: 4,
                   borderRadius: "12px",
-                  minHeight: 500, // Giữ lại minHeight nếu muốn
-                  overflow: "hidden", // Giữ lại overflow
+                  minHeight: 500,
+                  overflow: "hidden",
                 }}
               >
                 <AnimatePresence mode="wait">

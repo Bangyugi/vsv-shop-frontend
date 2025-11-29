@@ -2,15 +2,8 @@ import type { UserData } from "./auth";
 import type { ApiResponse } from "./index";
 import type { ApiAddress, AddAddressRequest } from "./address";
 
-/**
- * Trạng thái của Seller (dựa trên trường accountStatus)
- * API mẫu dùng "ACTIVE", khớp với logic
- */
 export type SellerStatus = "ACTIVE" | "PENDING" | "REJECTED" | "SUSPENDED";
 
-/**
- * Chi tiết doanh nghiệp (businessDetails)
- */
 export interface SellerBusinessDetails {
   businessName: string;
   businessEmail: string;
@@ -20,9 +13,6 @@ export interface SellerBusinessDetails {
   banner: string | null;
 }
 
-/**
- * Chi tiết ngân hàng (bankDetails)
- */
 export interface SellerBankDetails {
   accountNumber: string;
   accountHolderName: string;
@@ -30,11 +20,6 @@ export interface SellerBankDetails {
   ifscCode: string;
 }
 
-/**
- * Dữ liệu chi tiết của Seller trả về từ API (dựa trên response mẫu)
- * SỬA LỖI: Loại bỏ 'id' ở cấp gốc vì nó không tồn tại trong response.
- * Chúng ta sẽ dùng 'user.id' làm ID định danh.
- */
 export interface ApiSellerData {
   user: UserData;
   avatar: string | null;
@@ -46,9 +31,6 @@ export interface ApiSellerData {
   accountStatus: SellerStatus;
 }
 
-/**
- * Dữ liệu trả về cho API lấy danh sách seller (phân trang)
- */
 export interface SellerPageData {
   pageContent: ApiSellerData[];
   pageNo: number;
@@ -59,9 +41,6 @@ export interface SellerPageData {
 
 export type GetSellersResponse = ApiResponse<SellerPageData>;
 
-/**
- * Dữ liệu gửi đi khi cập nhật trạng thái seller
- */
 export interface UpdateSellerStatusRequest {
   status: SellerStatus;
   reason?: string;
@@ -69,9 +48,6 @@ export interface UpdateSellerStatusRequest {
 
 export type UpdateSellerStatusResponse = ApiResponse<ApiSellerData>;
 
-/**
- * Dữ liệu cho Business Details trong request đăng ký
- */
 export interface SellerBusinessDetailsRequest {
   businessName: string;
   businessEmail: string;
@@ -81,9 +57,6 @@ export interface SellerBusinessDetailsRequest {
   banner: string;
 }
 
-/**
- * Dữ liệu cho Bank Details trong request đăng ký
- */
 export interface SellerBankDetailsRequest {
   accountNumber: string;
   accountHolderName: string;
@@ -91,9 +64,6 @@ export interface SellerBankDetailsRequest {
   ifscCode: string;
 }
 
-/**
- * Toàn bộ request body để đăng ký seller
- */
 export interface SellerRegistrationRequest {
   businessDetails: SellerBusinessDetailsRequest;
   bankDetails: SellerBankDetailsRequest;
@@ -101,8 +71,4 @@ export interface SellerRegistrationRequest {
   gstin: string;
 }
 
-/**
- * Kiểu dữ liệu trả về khi đăng ký seller thành công
- * (Giả định trả về ApiSellerData)
- */
 export type SellerRegistrationResponse = ApiResponse<ApiSellerData>;

@@ -45,9 +45,6 @@ interface SellerDetailDialogProps {
   isLoading: boolean;
 }
 
-/**
- * Hiển thị một item thông tin với icon
- */
 const InfoItem: React.FC<{
   icon: React.ReactElement;
   label: string;
@@ -72,9 +69,6 @@ const InfoItem: React.FC<{
   </ListItem>
 );
 
-/**
- * Render các chip Role
- */
 const renderRoleChips = (roles: UserRole[]) => {
   if (!roles || roles.length === 0) {
     return (
@@ -139,9 +133,6 @@ const renderRoleChips = (roles: UserRole[]) => {
   );
 };
 
-/**
- * Dialog hiển thị thông tin chi tiết của Seller.
- */
 const SellerDetailDialog: React.FC<SellerDetailDialogProps> = ({
   open,
   onClose,
@@ -185,7 +176,6 @@ const SellerDetailDialog: React.FC<SellerDetailDialogProps> = ({
 
     return (
       <Box>
-        {/* === Profile Header === */}
         <Box
           sx={{
             display: "flex",
@@ -208,7 +198,6 @@ const SellerDetailDialog: React.FC<SellerDetailDialogProps> = ({
           </Typography>
         </Box>
 
-        {/* === Thông tin User === */}
         <List sx={{ p: 0 }}>
           <InfoItem icon={<BadgeOutlined />} label="User ID" value={user.id} />
           <InfoItem
@@ -263,7 +252,6 @@ const SellerDetailDialog: React.FC<SellerDetailDialogProps> = ({
             <Chip label="Seller Details" size="small" />
           </Divider>
 
-          {/* === Thông tin Seller === */}
           <InfoItem
             icon={<BusinessCenterOutlined />}
             label="Business Name"

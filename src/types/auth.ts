@@ -1,10 +1,5 @@
 import type { ApiResponse } from "./index";
 
-/**
- * Kiểu dữ liệu chung cho response từ API
- * --- XÓA ĐỊNH NGHĨA TRÙNG LẶP ---
- */
-
 export type Gender = "MALE" | "FEMALE" | "OTHER";
 
 export interface RegisterRequest {

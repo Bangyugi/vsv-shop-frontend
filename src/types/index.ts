@@ -1,4 +1,3 @@
-// src/types/index.ts
 import type { ApiVariant } from "./product";
 
 export interface User {
@@ -22,7 +21,7 @@ export interface Product {
 export interface ApiResponse<T> {
   code: number;
   message: string;
-  data: T | null; // <-- SỬA LỖI: Cho phép data là null
+  data: T | null;
 }
 export interface CartItem {
   id: number;

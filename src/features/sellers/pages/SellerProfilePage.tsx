@@ -12,10 +12,10 @@ import {
   Select,
   MenuItem,
   CircularProgress,
-  Alert, // Vẫn giữ Alert để render bên trong Snackbar
+  Alert, 
   FormHelperText,
   Divider,
-  Snackbar, // <-- THÊM
+  Snackbar,
 } from "@mui/material";
 import {
   BusinessCenterOutlined,
@@ -31,7 +31,6 @@ import type { SellerRegistrationRequest } from "../../../types/seller";
 import type { AddAddressRequest } from "../../../types/address";
 import type { ApiSellerData } from "../../../types/seller";
 
-// (Validation Schemas giữ nguyên)
 const businessSchema = yup.object({
   businessName: yup.string().required("Business name is required"),
   businessEmail: yup
@@ -71,17 +70,14 @@ const combinedValidationSchema = businessSchema
   .concat(addressSchema)
   .concat(bankSchema);
 
-// --- Component ---
 const SellerProfilePage: React.FC = () => {
   const [isLoadingData, setIsLoadingData] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null); // Lỗi khi tải
-  // --- THAY ĐỔI: Dùng state snackbar ---
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
     severity: "success" | "error";
   } | null>(null);
-  // ---
   const [loadedSellerData, setLoadedSellerData] =
     useState<ApiSellerData | null>(null);
 
@@ -110,7 +106,7 @@ const SellerProfilePage: React.FC = () => {
     validationSchema: combinedValidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
       setSubmitting(true);
-      setSnackbar(null); // Đóng snackbar cũ (nếu có)
+      setSnackbar(null); 
 
       if (!loadedSellerData) {
         setSnackbar({
@@ -122,10 +118,10 @@ const SellerProfilePage: React.FC = () => {
         return;
       }
       const sellerId = loadedSellerData.user.id;
-      const pickupAddressId = loadedSellerData.pickupAddress.id;
+      // const pickupAddressId = loadedSellerData.pickupAddress.id;
 
       const pickupAddress: AddAddressRequest = {
-        id: pickupAddressId,
+        // id: pickupAddressId, // Removed as it's not part of AddAddressRequest
         fullName: values.fullName,
         phoneNumber: values.phoneNumber,
         email: values.email,
@@ -161,7 +157,6 @@ const SellerProfilePage: React.FC = () => {
           updateData
         );
         if (response.code === 200 || response.code === 201) {
-          // --- THAY ĐỔI: set snackbar ---
           setSnackbar({
             open: true,
             message: "Profile updated successfully!",
@@ -176,7 +171,6 @@ const SellerProfilePage: React.FC = () => {
           error.response?.data?.message ||
           error.message ||
           "Update failed. Please try again.";
-        // --- THAY ĐỔI: set snackbar ---
         setSnackbar({
           open: true,
           message: errorMessage,
@@ -237,14 +231,11 @@ const SellerProfilePage: React.FC = () => {
     };
 
     loadProfile();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // --- THÊM: Hàm đóng snackbar ---
   const handleCloseSnackbar = () => {
     setSnackbar(null);
   };
-  // ---
 
   if (isLoadingData) {
     return (
@@ -277,15 +268,13 @@ const SellerProfilePage: React.FC = () => {
           My Store Profile
         </Typography>
 
-        {/* --- THAY ĐỔI: Chỉ hiển thị lỗi load, lỗi submit dùng snackbar --- */}
+
         {loadError && (
           <Alert severity="error" sx={{ mb: 3 }}>
             {loadError}
           </Alert>
         )}
-        {/* --- (Xóa Alert apiSuccess/apiError) --- */}
 
-        {/* --- Phần 1: Business Details (Giữ nguyên) --- */}
         <Box className="flex items-center gap-2 mb-3">
           <BusinessCenterOutlined color="primary" />
           <Typography variant="h6" className="font-semibold">
@@ -293,7 +282,6 @@ const SellerProfilePage: React.FC = () => {
           </Typography>
         </Box>
         <Grid container spacing={2} sx={{ mb: 4 }}>
-          {/* (Các trường giữ nguyên) */}
           <Grid item xs={12}>
             <TextField
               fullWidth
@@ -390,7 +378,6 @@ const SellerProfilePage: React.FC = () => {
 
         <Divider sx={{ my: 4 }} />
 
-        {/* --- Phần 2: Pickup Address (Giữ nguyên) --- */}
         <Box className="flex items-center gap-2 mb-3">
           <LocalShippingOutlined color="primary" />
           <Typography variant="h6" className="font-semibold">
@@ -398,7 +385,6 @@ const SellerProfilePage: React.FC = () => {
           </Typography>
         </Box>
         <Grid container spacing={2} sx={{ mb: 4 }}>
-          {/* (Các trường giữ nguyên) */}
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
@@ -508,7 +494,6 @@ const SellerProfilePage: React.FC = () => {
 
         <Divider sx={{ my: 4 }} />
 
-        {/* --- Phần 3: Bank & Tax (Giữ nguyên) --- */}
         <Box className="flex items-center gap-2 mb-3">
           <AccountBalanceOutlined color="primary" />
           <Typography variant="h6" className="font-semibold">
@@ -516,7 +501,6 @@ const SellerProfilePage: React.FC = () => {
           </Typography>
         </Box>
         <Grid container spacing={2}>
-          {/* (Các trường giữ nguyên) */}
           <Grid item xs={12}>
             <TextField
               fullWidth
@@ -590,7 +574,6 @@ const SellerProfilePage: React.FC = () => {
           </Grid>
         </Grid>
 
-        {/* Nút Save (Giữ nguyên) */}
         <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 5 }}>
           <Button
             type="submit"
@@ -607,7 +590,6 @@ const SellerProfilePage: React.FC = () => {
         </Box>
       </Box>
 
-      {/* --- THÊM: Component Snackbar --- */}
       <Snackbar
         open={!!snackbar}
         autoHideDuration={4000}
@@ -625,7 +607,6 @@ const SellerProfilePage: React.FC = () => {
           </Alert>
         ) : undefined}
       </Snackbar>
-      {/* --- KẾT THÚC THÊM --- */}
     </Paper>
   );
 };

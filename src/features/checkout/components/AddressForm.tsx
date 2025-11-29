@@ -131,7 +131,6 @@ const AddressForm = ({
       )}
 
       <Grid container spacing={2}>
-        {/* Full Name */}
         <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
@@ -144,7 +143,7 @@ const AddressForm = ({
             disabled={isSubmitting}
           />
         </Grid>
-        {/* Phone Number */}
+
         <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
@@ -157,7 +156,7 @@ const AddressForm = ({
             disabled={isSubmitting}
           />
         </Grid>
-        {/* Email */}
+
         <Grid item xs={12}>
           <TextField
             fullWidth
@@ -171,7 +170,6 @@ const AddressForm = ({
           />
         </Grid>
 
-        {/* Province / City */}
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth error={!!errors.city}>
             <InputLabel>Province / City</InputLabel>
@@ -192,7 +190,6 @@ const AddressForm = ({
           </FormControl>
         </Grid>
 
-        {/* District */}
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth error={!!errors.district}>
             <InputLabel>District</InputLabel>
@@ -215,7 +212,6 @@ const AddressForm = ({
           </FormControl>
         </Grid>
 
-        {/* Address (Street, number) */}
         <Grid item xs={12}>
           <TextField
             fullWidth
@@ -229,7 +225,6 @@ const AddressForm = ({
           />
         </Grid>
 
-        {/* Note (Optional) */}
         <Grid item xs={12}>
           <TextField
             fullWidth
@@ -241,7 +236,6 @@ const AddressForm = ({
           />
         </Grid>
 
-        {/* Buttons */}
         <Grid item xs={12} className="flex gap-2 justify-end">
           <Button
             variant="outlined"
