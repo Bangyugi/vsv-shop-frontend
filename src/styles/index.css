@@ -1,0 +1,41 @@
+/* src/styles/index.css */
+
+@import "tailwindcss";
+
+/* Các giá trị này nên được đồng bộ với src/theme/tokens.ts
+  Đây là nơi cung cấp biến cho Tailwind CSS
+*/
+@theme {
+  --color-primary: #00bfa6;
+  --color-secondary: #ffb300;
+  --color-error: #e53935;
+  --color-background: #f9f9fb;
+  --color-text-primary: #212121;
+  --color-text-secondary: #757575;
+  --font-family-sans: "Roboto", "Helvetica", "Arial", sans-serif;
+}
+
+/* --- Custom Swiper Styles --- */
+.swiper-button-next,
+.swiper-button-prev {
+  color: var(--color-primary) !important; /* Lấy màu primary từ theme */
+  background-color: transparent;
+
+  width: 40px !important;
+  height: 40px !important;
+  transition: background-color 0.2s ease;
+}
+
+.swiper-button-next::after,
+.swiper-button-prev::after {
+  font-size: 12px !important;
+  font-weight: bold;
+}
+
+.swiper-pagination-bullet {
+  background-color: #ccc !important;
+}
+
+.swiper-pagination-bullet-active {
+  background-color: var(--color-primary) !important; /* Lấy màu primary từ theme */
+}
