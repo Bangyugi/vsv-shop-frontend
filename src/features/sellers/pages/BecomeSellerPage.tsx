@@ -9,7 +9,10 @@ import {
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { useAuth } from "../../../contexts/AuthContext";
 import SellerRegistrationForm from "../components/SellerRegistrasionForm";
-import { CheckCircleOutline } from "@mui/icons-material";
+import {
+  CheckCircleOutline,
+  HourglassEmptyOutlined,
+} from "@mui/icons-material";
 import { useState } from "react";
 import { motion } from "framer-motion";
 
@@ -118,19 +121,24 @@ const BecomeSellerPage = () => {
               textAlign: "center",
             }}
           >
-            <CheckCircleOutline
-              sx={{ fontSize: "5rem", color: "primary.main", mb: 2 }}
+            {/* CẬP NHẬT: Thay đổi icon và thông báo thành 'Pending' */}
+            <HourglassEmptyOutlined
+              sx={{ fontSize: "5rem", color: "warning.main", mb: 2 }}
             />
             <Typography variant="h5" component="h1" className="font-bold">
-              Application Submitted!
+              Application Submitted Successfully!
             </Typography>
             <Typography
               variant="body1"
               color="text.secondary"
-              sx={{ mt: 2, mb: 4 }}
+              sx={{ mt: 2, mb: 4, maxWidth: "400px", mx: "auto" }}
             >
-              Thank you for registering. Your application is pending review. We
-              will notify you via email once it's approved.
+              Thank you for registering. Your application is now{" "}
+              <b>Pending Verification</b>.
+              <br />
+              <br />
+              Our administrators will review your details. You will be granted
+              Seller access once approved.
             </Typography>
             <Button
               variant="contained"

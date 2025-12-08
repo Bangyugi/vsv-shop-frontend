@@ -2,7 +2,13 @@ import type { UserData } from "./auth";
 import type { ApiResponse } from "./index";
 import type { ApiAddress, AddAddressRequest } from "./address";
 
-export type SellerStatus = "ACTIVE" | "PENDING" | "REJECTED" | "SUSPENDED";
+export type SellerStatus =
+  | "ACTIVE"
+  | "PENDING_VERIFICATION"
+  | "BANNED"
+  | "DEACTIVATED"
+  | "CLOSED"
+  | "REJECTED";
 
 export interface SellerBusinessDetails {
   businessName: string;

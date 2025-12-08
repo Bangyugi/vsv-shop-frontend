@@ -1,4 +1,3 @@
-
 import api from "../api/axios";
 
 import type { ApiResponse } from "../types";
@@ -13,7 +12,6 @@ import type {
 
 import type { ApiProduct, ProductPageData } from "../types/product";
 
-
 import type {
   ApiCategory,
   CreateCategoryRequest,
@@ -25,7 +23,6 @@ import type {
   ApiOrderStatus,
   OrderPageData,
 } from "../types/order";
-
 
 const BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
@@ -58,13 +55,11 @@ export const getUsers = async (
     .then((res) => res.data);
 };
 
-
 export const getUserById = (userId: number): Promise<ApiResponse<UserData>> => {
   return api
     .get<ApiResponse<UserData>>(`${BASE_URL}/admin/users/find/${userId}`)
     .then((res) => res.data);
 };
-
 
 export const deleteUser = (userId: number): Promise<ApiResponse<null>> => {
   return api
@@ -81,7 +76,6 @@ export const getSellerById = (
     )
     .then((res) => res.data);
 };
-
 
 export const getSellers = async (
   page: number,
@@ -105,6 +99,23 @@ export const getSellers = async (
     .then((res) => res.data);
 };
 
+export const getPendingSellers = async (
+  page: number,
+  size: number,
+  sortBy?: string,
+  sortDir?: "ASC" | "DESC"
+): Promise<GetSellersResponse> => {
+  return api
+    .get<GetSellersResponse>(`${BASE_URL}/admin/sellers/pending`, {
+      params: {
+        pageNo: page,
+        pageSize: size,
+        sortBy: sortBy || "createdAt",
+        sortDir: sortDir || "ASC",
+      },
+    })
+    .then((res) => res.data);
+};
 
 export const updateSellerStatus = async (
   sellerId: number,
@@ -118,7 +129,6 @@ export const updateSellerStatus = async (
     )
     .then((res) => res.data);
 };
-
 
 export const getAdminProducts = async (
   page: number,
@@ -142,7 +152,6 @@ export const getAdminProducts = async (
     .then((res) => res.data);
 };
 
-
 export const adminUpdateProductVisibility = (
   productId: number,
   isVisible: boolean
@@ -163,7 +172,6 @@ export const adminDeleteProduct = (
     .then((res) => res.data);
 };
 
-
 export const getAdminCategories = async (): Promise<
   ApiResponse<ApiCategory[]>
 > => {
@@ -179,7 +187,6 @@ export const createCategory = async (
     .post<ApiResponse<ApiCategory>>(`${BASE_URL}/categories`, data)
     .then((res) => res.data);
 };
-
 
 export const updateCategory = async (
   id: number,
@@ -198,7 +205,6 @@ export const deleteCategory = async (
     .then((res) => res.data);
 };
 
-
 export const getAdminOrders = async (
   page: number,
   size: number,
@@ -214,7 +220,6 @@ export const getAdminOrders = async (
     })
     .then((res) => res.data);
 };
-
 
 export const updateAdminOrderStatus = async (
   orderId: string,

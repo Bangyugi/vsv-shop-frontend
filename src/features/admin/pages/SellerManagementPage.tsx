@@ -31,17 +31,20 @@ import {
   Cancel,
   Search,
   VisibilityOutlined,
+  DoDisturbOnOutlined,
+  StorefrontOutlined,
 } from "@mui/icons-material";
 import * as adminService from "../../../services/adminService";
 import type { ApiSellerData, SellerStatus } from "../../../types/seller";
 
 import SellerDetailDialog from "../components/SellerDetailDialog";
 
+// CẬP NHẬT: Mapping status mới sang UI
 const getStatusChipProps = (
   status: SellerStatus
 ): {
   icon: React.ReactElement;
-  color: "success" | "error" | "default" | "warning";
+  color: "success" | "error" | "default" | "warning" | "info";
   label: string;
 } => {
   switch (status) {
@@ -51,31 +54,54 @@ const getStatusChipProps = (
         color: "success",
         label: "Active",
       };
+    case "PENDING_VERIFICATION":
+      return {
+        icon: <HourglassEmptyOutlined />,
+        color: "warning", // Màu vàng cho trạng thái chờ
+        label: "Pending Verification",
+      };
+    case "BANNED":
+      return {
+        icon: <BlockOutlined />,
+        color: "error",
+        label: "Banned",
+      };
+    case "DEACTIVATED":
+      return {
+        icon: <DoDisturbOnOutlined />,
+        color: "default",
+        label: "Deactivated",
+      };
+    case "CLOSED":
+      return {
+        icon: <StorefrontOutlined />,
+        color: "default",
+        label: "Closed",
+      };
     case "REJECTED":
       return {
         icon: <HighlightOffOutlined />,
         color: "error",
         label: "Rejected",
       };
-    case "SUSPENDED":
-      return { icon: <BlockOutlined />, color: "warning", label: "Suspended" };
-    case "PENDING":
     default:
       return {
         icon: <HourglassEmptyOutlined />,
         color: "default",
-        label: "Pending",
+        label: status,
       };
   }
 };
 
 type StatusFilter = SellerStatus | "ALL";
+
+// CẬP NHẬT: Danh sách filter mới
 const statusFilters: { value: StatusFilter; label: string }[] = [
   { value: "ALL", label: "All Statuses" },
-  { value: "PENDING", label: "Pending" },
+  { value: "PENDING_VERIFICATION", label: "Pending Verification" },
   { value: "ACTIVE", label: "Active" },
-  { value: "REJECTED", label: "Rejected" },
-  { value: "SUSPENDED", label: "Suspended" },
+  { value: "BANNED", label: "Banned" },
+  { value: "DEACTIVATED", label: "Deactivated" },
 ];
 
 const sortOptions = [
@@ -83,15 +109,10 @@ const sortOptions = [
   { value: "id_desc", label: "ID: Giảm dần" },
   { value: "businessName_asc", label: "Tên Shop: A-Z" },
   { value: "businessName_desc", label: "Tên Shop: Z-A" },
-  { value: "email_asc", label: "Email: A-Z" },
-  { value: "email_desc", label: "Email: Z-A" },
   { value: "createdAt_asc", label: "Ngày đăng ký: Cũ nhất" },
   { value: "createdAt_desc", label: "Ngày đăng ký: Mới nhất" },
 ];
 
-/**
- * Thanh công cụ tùy chỉnh (CẬP NHẬT THEO USER MANAGEMENT PAGE)
- */
 interface CustomToolbarProps {
   searchTerm: string;
   onSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -100,6 +121,7 @@ interface CustomToolbarProps {
   statusFilter: StatusFilter;
   onStatusFilterChange: (event: SelectChangeEvent) => void;
 }
+
 const CustomToolbar: React.FC<CustomToolbarProps> = ({
   searchTerm,
   onSearchChange,
@@ -138,7 +160,7 @@ const CustomToolbar: React.FC<CustomToolbarProps> = ({
         }}
       />
       <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-        <FormControl size="small" sx={{ minWidth: 180 }}>
+        <FormControl size="small" sx={{ minWidth: 200 }}>
           <InputLabel>Status</InputLabel>
           <Select
             value={statusFilter}
@@ -194,18 +216,32 @@ const SellerManagementPage = () => {
     setIsLoading(true);
     setError(null);
     const [sortField, sortDirection] = sortBy.split("_");
-    const status = statusFilter === "ALL" ? undefined : statusFilter;
     const keyword = searchTerm || undefined;
 
     try {
-      const response = await adminService.getSellers(
-        paginationModel.page + 1,
-        paginationModel.pageSize,
-        status,
-        keyword,
-        sortField,
-        sortDirection as "ASC" | "DESC"
-      );
+      let response;
+
+      // Nếu filter là PENDING_VERIFICATION, dùng API chuyên biệt mới
+      if (statusFilter === "PENDING_VERIFICATION") {
+        response = await adminService.getPendingSellers(
+          paginationModel.page + 1,
+          paginationModel.pageSize,
+          sortField,
+          sortDirection as "ASC" | "DESC"
+        );
+      } else {
+        // Ngược lại dùng API chung (backend sẽ lọc theo status param)
+        const apiStatus = statusFilter === "ALL" ? undefined : statusFilter;
+        response = await adminService.getSellers(
+          paginationModel.page + 1,
+          paginationModel.pageSize,
+          apiStatus,
+          keyword,
+          sortField,
+          sortDirection as "ASC" | "DESC"
+        );
+      }
+
       if (response.code === 200 && response.data) {
         setRows(response.data.pageContent);
         setRowCount(response.data.totalElements);
@@ -338,21 +374,15 @@ const SellerManagementPage = () => {
       valueGetter: (_value: any, row: ApiSellerData) => row.user.email,
     },
     {
-      field: "phone",
-      headerName: "Phone",
-      width: 130,
-      valueGetter: (_value: any, row: ApiSellerData) => row.user.phone,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
       field: "accountStatus",
       headerName: "Status",
-      width: 130,
+      width: 180,
       align: "center",
       headerAlign: "center",
       renderCell: (params: GridRenderCellParams<any, SellerStatus>) => {
-        const props = getStatusChipProps(params.value || "PENDING");
+        const props = getStatusChipProps(
+          params.value || "PENDING_VERIFICATION"
+        );
         return <Chip {...props} size="small" variant="outlined" />;
       },
     },
@@ -380,11 +410,12 @@ const SellerManagementPage = () => {
           />
         );
 
-        if (row.accountStatus === "PENDING") {
+        // CẬP NHẬT: Logic hiển thị nút theo status mới
+        if (row.accountStatus === "PENDING_VERIFICATION") {
           actions.push(
             <GridActionsCellItem
               icon={
-                <Tooltip title="Approve">
+                <Tooltip title="Approve (Activate)">
                   <CheckCircle color="success" />
                 </Tooltip>
               }
@@ -395,27 +426,30 @@ const SellerManagementPage = () => {
           actions.push(
             <GridActionsCellItem
               icon={
-                <Tooltip title="Reject">
+                <Tooltip title="Reject (Ban)">
                   <Cancel color="error" />
                 </Tooltip>
               }
               label="Reject"
-              onClick={() => handleUpdateStatus(row.user.id, "REJECTED")}
+              onClick={() => handleUpdateStatus(row.user.id, "BANNED")} // Hoặc REJECTED tùy backend mapping
             />
           );
         } else if (row.accountStatus === "ACTIVE") {
           actions.push(
             <GridActionsCellItem
               icon={
-                <Tooltip title="Suspend">
-                  <BlockOutlined color="warning" />
+                <Tooltip title="Ban / Deactivate">
+                  <BlockOutlined color="error" />
                 </Tooltip>
               }
-              label="Suspend"
-              onClick={() => handleUpdateStatus(row.user.id, "SUSPENDED")}
+              label="Ban"
+              onClick={() => handleUpdateStatus(row.user.id, "BANNED")}
             />
           );
-        } else if (row.accountStatus === "SUSPENDED") {
+        } else if (
+          row.accountStatus === "BANNED" ||
+          row.accountStatus === "DEACTIVATED"
+        ) {
           actions.push(
             <GridActionsCellItem
               icon={
@@ -451,7 +485,6 @@ const SellerManagementPage = () => {
         </Alert>
       )}
 
-      {/* --- CẬP NHẬT: Style cho Paper (giống User page) --- */}
       <Paper
         elevation={0}
         sx={{
@@ -502,13 +535,7 @@ const SellerManagementPage = () => {
             "& .MuiDataGrid-cell[data-field='id']": {
               justifyContent: "center",
             },
-            "& .MuiDataGrid-cell[data-field='phone']": {
-              justifyContent: "center",
-            },
             "& .MuiDataGrid-cell[data-field='accountStatus']": {
-              justifyContent: "center",
-            },
-            "& .MuiDataGrid-cell[data-field='createdAt']": {
               justifyContent: "center",
             },
             "& .MuiDataGrid-cell[data-field='actions']": {
@@ -525,16 +552,13 @@ const SellerManagementPage = () => {
         />
       </Paper>
 
-      {/* --- THÊM MỚI: Dialog xem chi tiết --- */}
       <SellerDetailDialog
         open={viewSellerOpen}
         onClose={handleCloseView}
         seller={sellerToView}
         isLoading={viewLoading}
       />
-      {/* --- KẾT THÚC THÊM MỚI --- */}
 
-      {/* (Snackbar giữ nguyên) */}
       <Snackbar
         open={!!snackbar}
         autoHideDuration={4000}
