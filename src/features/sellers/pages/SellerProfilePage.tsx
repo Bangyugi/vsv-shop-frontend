@@ -1,4 +1,3 @@
-// src/features/sellers/pages/SellerProfilePage.tsx
 import { useState, useEffect, useMemo } from "react";
 import {
   Box,
@@ -12,7 +11,7 @@ import {
   Select,
   MenuItem,
   CircularProgress,
-  Alert, 
+  Alert,
   FormHelperText,
   Divider,
   Snackbar,
@@ -106,7 +105,7 @@ const SellerProfilePage: React.FC = () => {
     validationSchema: combinedValidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
       setSubmitting(true);
-      setSnackbar(null); 
+      setSnackbar(null);
 
       if (!loadedSellerData) {
         setSnackbar({
@@ -245,369 +244,385 @@ const SellerProfilePage: React.FC = () => {
     );
   }
 
+  // REFACTORED: Moved motion.div to wrap the Paper instead of using component prop
   return (
-    <Paper
-      elevation={0}
-      component={motion.div}
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      sx={{
-        p: { xs: 3, md: 5 },
-        borderRadius: "12px",
-        border: "1px solid",
-        borderColor: "divider",
-      }}
+      transition={{ duration: 0.5 }}
+      style={{ paddingBottom: "32px" }} // Ensure space at bottom for scrolling
     >
-      <Box component="form" onSubmit={formik.handleSubmit} noValidate>
-        <Typography
-          variant="h4"
-          component="h1"
-          className="font-bold"
-          sx={{ mb: 4 }}
-        >
-          My Store Profile
-        </Typography>
-
-
-        {loadError && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {loadError}
-          </Alert>
-        )}
-
-        <Box className="flex items-center gap-2 mb-3">
-          <BusinessCenterOutlined color="primary" />
-          <Typography variant="h6" className="font-semibold">
-            Business Details
-          </Typography>
-        </Box>
-        <Grid container spacing={2} sx={{ mb: 4 }}>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              name="businessName"
-              label="Business Name"
-              value={formik.values.businessName}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={
-                formik.touched.businessName &&
-                Boolean(formik.errors.businessName)
-              }
-              helperText={
-                formik.touched.businessName && formik.errors.businessName
-              }
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              name="businessEmail"
-              label="Business Email"
-              value={formik.values.businessEmail}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={
-                formik.touched.businessEmail &&
-                Boolean(formik.errors.businessEmail)
-              }
-              helperText={
-                formik.touched.businessEmail && formik.errors.businessEmail
-              }
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              name="businessMobile"
-              label="Business Phone (10 digits)"
-              value={formik.values.businessMobile}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={
-                formik.touched.businessMobile &&
-                Boolean(formik.errors.businessMobile)
-              }
-              helperText={
-                formik.touched.businessMobile && formik.errors.businessMobile
-              }
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              name="businessAddress"
-              label="Business Address"
-              value={formik.values.businessAddress}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={
-                formik.touched.businessAddress &&
-                Boolean(formik.errors.businessAddress)
-              }
-              helperText={
-                formik.touched.businessAddress && formik.errors.businessAddress
-              }
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              name="logo"
-              label="Logo URL (Optional)"
-              value={formik.values.logo}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.logo && Boolean(formik.errors.logo)}
-              helperText={formik.touched.logo && formik.errors.logo}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              name="banner"
-              label="Banner URL (Optional)"
-              value={formik.values.banner}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.banner && Boolean(formik.errors.banner)}
-              helperText={formik.touched.banner && formik.errors.banner}
-            />
-          </Grid>
-        </Grid>
-
-        <Divider sx={{ my: 4 }} />
-
-        <Box className="flex items-center gap-2 mb-3">
-          <LocalShippingOutlined color="primary" />
-          <Typography variant="h6" className="font-semibold">
-            Pickup Address
-          </Typography>
-        </Box>
-        <Grid container spacing={2} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              name="fullName"
-              label="Contact Name"
-              value={formik.values.fullName}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.fullName && Boolean(formik.errors.fullName)}
-              helperText={formik.touched.fullName && formik.errors.fullName}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              name="phoneNumber"
-              label="Contact Phone (10 digits)"
-              value={formik.values.phoneNumber}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={
-                formik.touched.phoneNumber && Boolean(formik.errors.phoneNumber)
-              }
-              helperText={
-                formik.touched.phoneNumber && formik.errors.phoneNumber
-              }
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              name="email"
-              label="Contact Email"
-              value={formik.values.email}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.email && Boolean(formik.errors.email)}
-              helperText={formik.touched.email && formik.errors.email}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <FormControl
-              fullWidth
-              error={formik.touched.province && Boolean(formik.errors.province)}
-            >
-              <InputLabel>Province / City</InputLabel>
-              <Select
-                name="province"
-                label="Province / City"
-                value={formik.values.province}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              >
-                {mockProvinces.map((province) => (
-                  <MenuItem key={province} value={province}>
-                    {" "}
-                    {province}{" "}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FormHelperText>
-                {" "}
-                {formik.touched.province && formik.errors.province}{" "}
-              </FormHelperText>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <FormControl
-              fullWidth
-              error={formik.touched.district && Boolean(formik.errors.district)}
-            >
-              <InputLabel>District</InputLabel>
-              <Select
-                name="district"
-                label="District"
-                value={formik.values.district}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                disabled={!formik.values.province}
-              >
-                {availableDistricts.map((district) => (
-                  <MenuItem key={district} value={district}>
-                    {" "}
-                    {district}{" "}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FormHelperText>
-                {" "}
-                {formik.touched.district && formik.errors.district}{" "}
-              </FormHelperText>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              name="address"
-              label="Street Address, Ward"
-              value={formik.values.address}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.address && Boolean(formik.errors.address)}
-              helperText={formik.touched.address && formik.errors.address}
-            />
-          </Grid>
-        </Grid>
-
-        <Divider sx={{ my: 4 }} />
-
-        <Box className="flex items-center gap-2 mb-3">
-          <AccountBalanceOutlined color="primary" />
-          <Typography variant="h6" className="font-semibold">
-            Bank & Tax Details
-          </Typography>
-        </Box>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              name="bankName"
-              label="Bank Name"
-              value={formik.values.bankName}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.bankName && Boolean(formik.errors.bankName)}
-              helperText={formik.touched.bankName && formik.errors.bankName}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              name="accountHolderName"
-              label="Account Holder Name"
-              value={formik.values.accountHolderName}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={
-                formik.touched.accountHolderName &&
-                Boolean(formik.errors.accountHolderName)
-              }
-              helperText={
-                formik.touched.accountHolderName &&
-                formik.errors.accountHolderName
-              }
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              name="accountNumber"
-              label="Account Number"
-              value={formik.values.accountNumber}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={
-                formik.touched.accountNumber &&
-                Boolean(formik.errors.accountNumber)
-              }
-              helperText={
-                formik.touched.accountNumber && formik.errors.accountNumber
-              }
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              name="ifscCode"
-              label="Bank Code / SWIFT"
-              value={formik.values.ifscCode}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.ifscCode && Boolean(formik.errors.ifscCode)}
-              helperText={formik.touched.ifscCode && formik.errors.ifscCode}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              name="gstin"
-              label="Tax ID / Business Reg. No."
-              value={formik.values.gstin}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.gstin && Boolean(formik.errors.gstin)}
-              helperText={formik.touched.gstin && formik.errors.gstin}
-            />
-          </Grid>
-        </Grid>
-
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 5 }}>
-          <Button
-            type="submit"
-            variant="contained"
-            size="large"
-            disabled={formik.isSubmitting || !formik.dirty}
-          >
-            {formik.isSubmitting ? (
-              <CircularProgress size={24} color="inherit" />
-            ) : (
-              "Save Changes"
-            )}
-          </Button>
-        </Box>
-      </Box>
-
-      <Snackbar
-        open={!!snackbar}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 3, md: 5 },
+          borderRadius: "12px",
+          border: "1px solid",
+          borderColor: "divider",
+        }}
       >
-        {snackbar ? (
-          <Alert
-            onClose={handleCloseSnackbar}
-            severity={snackbar.severity}
-            variant="filled"
-            sx={{ width: "100%" }}
+        <Box component="form" onSubmit={formik.handleSubmit} noValidate>
+          <Typography
+            variant="h4"
+            component="h1"
+            className="font-bold"
+            sx={{ mb: 4 }}
           >
-            {snackbar.message}
-          </Alert>
-        ) : undefined}
-      </Snackbar>
-    </Paper>
+            My Store Profile
+          </Typography>
+
+          {loadError && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {loadError}
+            </Alert>
+          )}
+
+          <Box className="flex items-center gap-2 mb-3">
+            <BusinessCenterOutlined color="primary" />
+            <Typography variant="h6" className="font-semibold">
+              Business Details
+            </Typography>
+          </Box>
+          <Grid container spacing={2} sx={{ mb: 4 }}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                name="businessName"
+                label="Business Name"
+                value={formik.values.businessName}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={
+                  formik.touched.businessName &&
+                  Boolean(formik.errors.businessName)
+                }
+                helperText={
+                  formik.touched.businessName && formik.errors.businessName
+                }
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                name="businessEmail"
+                label="Business Email"
+                value={formik.values.businessEmail}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={
+                  formik.touched.businessEmail &&
+                  Boolean(formik.errors.businessEmail)
+                }
+                helperText={
+                  formik.touched.businessEmail && formik.errors.businessEmail
+                }
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                name="businessMobile"
+                label="Business Phone (10 digits)"
+                value={formik.values.businessMobile}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={
+                  formik.touched.businessMobile &&
+                  Boolean(formik.errors.businessMobile)
+                }
+                helperText={
+                  formik.touched.businessMobile && formik.errors.businessMobile
+                }
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                name="businessAddress"
+                label="Business Address"
+                value={formik.values.businessAddress}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={
+                  formik.touched.businessAddress &&
+                  Boolean(formik.errors.businessAddress)
+                }
+                helperText={
+                  formik.touched.businessAddress &&
+                  formik.errors.businessAddress
+                }
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                name="logo"
+                label="Logo URL (Optional)"
+                value={formik.values.logo}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.logo && Boolean(formik.errors.logo)}
+                helperText={formik.touched.logo && formik.errors.logo}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                name="banner"
+                label="Banner URL (Optional)"
+                value={formik.values.banner}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.banner && Boolean(formik.errors.banner)}
+                helperText={formik.touched.banner && formik.errors.banner}
+              />
+            </Grid>
+          </Grid>
+
+          <Divider sx={{ my: 4 }} />
+
+          <Box className="flex items-center gap-2 mb-3">
+            <LocalShippingOutlined color="primary" />
+            <Typography variant="h6" className="font-semibold">
+              Pickup Address
+            </Typography>
+          </Box>
+          <Grid container spacing={2} sx={{ mb: 4 }}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                name="fullName"
+                label="Contact Name"
+                value={formik.values.fullName}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={
+                  formik.touched.fullName && Boolean(formik.errors.fullName)
+                }
+                helperText={formik.touched.fullName && formik.errors.fullName}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                name="phoneNumber"
+                label="Contact Phone (10 digits)"
+                value={formik.values.phoneNumber}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={
+                  formik.touched.phoneNumber &&
+                  Boolean(formik.errors.phoneNumber)
+                }
+                helperText={
+                  formik.touched.phoneNumber && formik.errors.phoneNumber
+                }
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                name="email"
+                label="Contact Email"
+                value={formik.values.email}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.email && Boolean(formik.errors.email)}
+                helperText={formik.touched.email && formik.errors.email}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl
+                fullWidth
+                error={
+                  formik.touched.province && Boolean(formik.errors.province)
+                }
+              >
+                <InputLabel>Province / City</InputLabel>
+                <Select
+                  name="province"
+                  label="Province / City"
+                  value={formik.values.province}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                >
+                  {mockProvinces.map((province) => (
+                    <MenuItem key={province} value={province}>
+                      {" "}
+                      {province}{" "}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <FormHelperText>
+                  {" "}
+                  {formik.touched.province && formik.errors.province}{" "}
+                </FormHelperText>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl
+                fullWidth
+                error={
+                  formik.touched.district && Boolean(formik.errors.district)
+                }
+              >
+                <InputLabel>District</InputLabel>
+                <Select
+                  name="district"
+                  label="District"
+                  value={formik.values.district}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  disabled={!formik.values.province}
+                >
+                  {availableDistricts.map((district) => (
+                    <MenuItem key={district} value={district}>
+                      {" "}
+                      {district}{" "}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <FormHelperText>
+                  {" "}
+                  {formik.touched.district && formik.errors.district}{" "}
+                </FormHelperText>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                name="address"
+                label="Street Address, Ward"
+                value={formik.values.address}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.address && Boolean(formik.errors.address)}
+                helperText={formik.touched.address && formik.errors.address}
+              />
+            </Grid>
+          </Grid>
+
+          <Divider sx={{ my: 4 }} />
+
+          <Box className="flex items-center gap-2 mb-3">
+            <AccountBalanceOutlined color="primary" />
+            <Typography variant="h6" className="font-semibold">
+              Bank & Tax Details
+            </Typography>
+          </Box>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                name="bankName"
+                label="Bank Name"
+                value={formik.values.bankName}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={
+                  formik.touched.bankName && Boolean(formik.errors.bankName)
+                }
+                helperText={formik.touched.bankName && formik.errors.bankName}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                name="accountHolderName"
+                label="Account Holder Name"
+                value={formik.values.accountHolderName}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={
+                  formik.touched.accountHolderName &&
+                  Boolean(formik.errors.accountHolderName)
+                }
+                helperText={
+                  formik.touched.accountHolderName &&
+                  formik.errors.accountHolderName
+                }
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                name="accountNumber"
+                label="Account Number"
+                value={formik.values.accountNumber}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={
+                  formik.touched.accountNumber &&
+                  Boolean(formik.errors.accountNumber)
+                }
+                helperText={
+                  formik.touched.accountNumber && formik.errors.accountNumber
+                }
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                name="ifscCode"
+                label="Bank Code / SWIFT"
+                value={formik.values.ifscCode}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={
+                  formik.touched.ifscCode && Boolean(formik.errors.ifscCode)
+                }
+                helperText={formik.touched.ifscCode && formik.errors.ifscCode}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                name="gstin"
+                label="Tax ID / Business Reg. No."
+                value={formik.values.gstin}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.gstin && Boolean(formik.errors.gstin)}
+                helperText={formik.touched.gstin && formik.errors.gstin}
+              />
+            </Grid>
+          </Grid>
+
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 5 }}>
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              disabled={formik.isSubmitting || !formik.dirty}
+            >
+              {formik.isSubmitting ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                "Save Changes"
+              )}
+            </Button>
+          </Box>
+        </Box>
+
+        <Snackbar
+          open={!!snackbar}
+          autoHideDuration={4000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          {snackbar ? (
+            <Alert
+              onClose={handleCloseSnackbar}
+              severity={snackbar.severity}
+              variant="filled"
+              sx={{ width: "100%" }}
+            >
+              {snackbar.message}
+            </Alert>
+          ) : undefined}
+        </Snackbar>
+      </Paper>
+    </motion.div>
   );
 };
 

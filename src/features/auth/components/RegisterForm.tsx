@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   TextField,
@@ -28,9 +28,10 @@ import {
 } from "@mui/icons-material";
 import { useFormik } from "formik";
 import * as yup from "yup";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import * as authService from "../../../services/authService";
-import type { RegisterRequest } from "../../../types/auth"; //
+import * as uploadService from "../../../services/uploadService";
+import type { RegisterRequest } from "../../../types/auth";
 
 const validationSchema = yup.object({
   firstName: yup.string().required("First name is required"),
@@ -44,7 +45,10 @@ const validationSchema = yup.object({
     .string()
     .matches(/^[0-9]{10}$/, "Phone number must be 10 digits")
     .required("Phone number is required"),
-  birthDate: yup.date().required("Date of birth is required"),
+  birthDate: yup
+    .date()
+    .typeError("Invalid date format") // Handles empty string casting errors
+    .required("Date of birth is required"),
   gender: yup.string().required("Gender is required"),
   password: yup
     .string()
@@ -54,16 +58,19 @@ const validationSchema = yup.object({
     .string()
     .oneOf([yup.ref("password")], "Passwords must match")
     .required("Confirm password is required"),
+  avatar: yup.string(),
 });
 
 const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false); // New loading state for avatar
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
-    severity: "success" | "error";
+    severity: "success" | "error" | "warning";
   } | null>(null);
+  
   const navigate = useNavigate();
 
   const formik = useFormik({
@@ -77,6 +84,7 @@ const RegisterForm = () => {
       gender: "MALE",
       password: "",
       confirmPassword: "",
+      avatar: "",
     },
     validationSchema: validationSchema,
     onSubmit: async (values, { setSubmitting }) => {
@@ -90,6 +98,7 @@ const RegisterForm = () => {
           lastName: values.lastName,
           birthDate: values.birthDate,
           gender: values.gender as "MALE" | "FEMALE" | "OTHER",
+          avatar: values.avatar,
         };
 
         const response = await authService.register(registerData);
@@ -97,11 +106,13 @@ const RegisterForm = () => {
         if (response.code === 200) {
           setSnackbar({
             open: true,
-            message: response.message,
+            message: response.message || "Registration successful!",
             severity: "success",
           });
 
-          navigate("/verify", { state: { email: values.email } });
+          setTimeout(() => {
+            navigate("/verify", { state: { email: values.email } });
+          }, 1500);
         } else {
           throw new Error(response.message);
         }
@@ -121,6 +132,46 @@ const RegisterForm = () => {
     },
   });
 
+  // Warn user if silent validation prevents submission
+  useEffect(() => {
+    if (formik.submitCount > 0 && !formik.isValid && !formik.isSubmitting) {
+      setSnackbar({
+        open: true,
+        message: "Please fix the errors in the form before registering.",
+        severity: "warning",
+      });
+    }
+  }, [formik.submitCount, formik.isValid, formik.isSubmitting]);
+
+  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.currentTarget.files?.[0];
+    if (file) {
+      setIsUploadingAvatar(true);
+      try {
+        // uploadService now correctly returns just the string URL
+        const url = await uploadService.uploadFile(file);
+        
+        // Update Formik state
+        formik.setFieldValue("avatar", url);
+        
+        setSnackbar({
+          open: true,
+          message: "Avatar uploaded successfully!",
+          severity: "success",
+        });
+      } catch (error: any) {
+        console.error("Error uploading avatar:", error);
+        setSnackbar({
+          open: true,
+          message: "Failed to upload avatar. Please try again.",
+          severity: "error",
+        });
+      } finally {
+        setIsUploadingAvatar(false);
+      }
+    }
+  };
+
   return (
     <>
       <Paper
@@ -132,6 +183,8 @@ const RegisterForm = () => {
           borderRadius: "16px",
           boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.05)",
           border: "1px solid #e0e0e0",
+          position: "relative",
+          zIndex: 1,
         }}
       >
         <Box component="form" onSubmit={formik.handleSubmit} noValidate>
@@ -151,6 +204,50 @@ const RegisterForm = () => {
           >
             Join us and start shopping!
           </Typography>
+
+          {/* Avatar Upload Section */}
+          <Box sx={{ mb: 3, textAlign: "center" }}>
+            <input
+              accept="image/*"
+              style={{ display: "none" }}
+              id="avatar-upload"
+              type="file"
+              onChange={handleAvatarChange}
+              disabled={isUploadingAvatar || formik.isSubmitting}
+            />
+            <label htmlFor="avatar-upload">
+              <Button 
+                variant="outlined" 
+                component="span"
+                disabled={isUploadingAvatar || formik.isSubmitting}
+              >
+                {isUploadingAvatar ? "Uploading..." : "Upload Avatar"}
+              </Button>
+            </label>
+            
+            {/* Show Loader or Image Preview */}
+            <Box mt={2} sx={{ minHeight: 100, display: "flex", justifyContent: "center", alignItems: "center" }}>
+              {isUploadingAvatar ? (
+                <CircularProgress size={40} />
+              ) : formik.values.avatar ? (
+                <img
+                  src={formik.values.avatar}
+                  alt="Avatar Preview"
+                  style={{
+                    width: 100,
+                    height: 100,
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    boxShadow: "0 4px 10px rgba(0,0,0,0.1)"
+                  }}
+                  onError={(e) => {
+                    // Fallback if URL is broken
+                    (e.target as HTMLImageElement).src = "https://via.placeholder.com/100?text=Error";
+                  }}
+                />
+              ) : null}
+            </Box>
+          </Box>
 
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
@@ -268,8 +365,9 @@ const RegisterForm = () => {
                 fullWidth
                 error={formik.touched.gender && Boolean(formik.errors.gender)}
               >
-                <InputLabel>Gender</InputLabel>
+                <InputLabel id="gender-label">Gender</InputLabel>
                 <Select
+                  labelId="gender-label"
                   name="gender"
                   label="Gender"
                   value={formik.values.gender}
@@ -365,7 +463,7 @@ const RegisterForm = () => {
             fullWidth
             variant="contained"
             size="large"
-            disabled={formik.isSubmitting}
+            disabled={formik.isSubmitting || isUploadingAvatar}
             sx={{
               mt: 3,
               mb: 2,
@@ -388,7 +486,12 @@ const RegisterForm = () => {
             className="text-center"
           >
             Already have an account?{" "}
-            <Link href="/login" variant="body2" underline="hover">
+            <Link
+              component={RouterLink}
+              to="/login"
+              variant="body2"
+              underline="hover"
+            >
               {"Login"}
             </Link>
           </Typography>
@@ -396,7 +499,7 @@ const RegisterForm = () => {
       </Paper>
 
       <Snackbar
-        open={snackbar?.open}
+        open={!!snackbar}
         autoHideDuration={3000}
         onClose={() => setSnackbar(null)}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
@@ -404,7 +507,7 @@ const RegisterForm = () => {
         {snackbar ? (
           <Alert
             onClose={() => setSnackbar(null)}
-            severity={snackbar.severity}
+            severity={snackbar.severity as any}
             variant="filled"
             sx={{ width: "100%" }}
           >

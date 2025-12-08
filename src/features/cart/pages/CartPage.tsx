@@ -9,9 +9,11 @@ import {
   Paper,
   TextField,
   CircularProgress,
+  InputAdornment,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
+import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
 
 import OrderSummary from "../components/OrderSummary";
 import CartItemCard from "../components/CartItemCard";
@@ -55,10 +57,18 @@ const CartPage = () => {
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [couponCodeInput, setCouponCodeInput] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
+  const [localSuccess, setLocalSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCart(true);
   }, [fetchCart]);
+
+  // Sync coupon code from server state if available
+  useEffect(() => {
+    if (cartData?.couponCode) {
+      setCouponCodeInput(cartData.couponCode);
+    }
+  }, [cartData?.couponCode]);
 
   const cartItems = useMemo(
     () => cartData?.cartItems.map(mapApiCartItemToFE) || [],
@@ -84,8 +94,10 @@ const CartPage = () => {
 
   const hasCoupon = apiCouponPercentage > 0;
 
+  // Calculate the total BEFORE coupon applied, to show the discount amount accurately
   const preCouponSellingTotal = useMemo(() => {
     if (hasCoupon && apiCouponPercentage < 100) {
+      // Formula: Final = Pre * (1 - rate) => Pre = Final / (1 - rate)
       return apiSellingSubtotal / (1 - apiCouponPercentage / 100);
     }
     return apiSellingSubtotal;
@@ -99,7 +111,6 @@ const CartPage = () => {
   }, [preCouponSellingTotal, apiSellingSubtotal, hasCoupon]);
 
   const shipping = 0;
-
   const total = apiSellingSubtotal + shipping;
 
   const handleQuantityChange = async (cartItemId: number, quantity: number) => {
@@ -112,6 +123,7 @@ const CartPage = () => {
     try {
       await updateQuantity(cartItemId, quantity);
     } catch (err) {
+      // Error handled in context
     } finally {
       setIsUpdatingQuantity((prev) => ({ ...prev, [cartItemId]: false }));
     }
@@ -127,19 +139,46 @@ const CartPage = () => {
   };
 
   const handleApplyCoupon = async () => {
-    if (!couponCodeInput.trim()) {
-      setLocalError("Please enter a coupon code.");
+    const code = couponCodeInput.trim();
+    if (!code) {
+      setLocalError("Vui lòng nhập mã giảm giá.");
       return;
     }
-    setLocalError(null);
-    setIsApplyingCoupon(true);
-    try {
-      await applyCoupon(couponCodeInput);
 
-      if (cartData?.couponCode) {
-        setCouponCodeInput(cartData.couponCode);
+    setLocalError(null);
+    setLocalSuccess(null);
+    setIsApplyingCoupon(true);
+
+    try {
+      await applyCoupon(code);
+      setLocalSuccess("Áp dụng mã thành công!");
+    } catch (err: any) {
+      // Mapping Error based on doc.txt
+      let message = "Có lỗi xảy ra, vui lòng thử lại.";
+      const backendError = err.response?.data;
+
+      if (backendError) {
+        if (backendError.code === 1031) {
+          const msg = backendError.message || "";
+          if (msg.toLowerCase().includes("minimum order value")) {
+            message = "Đơn hàng chưa đạt giá trị tối thiểu để dùng mã này.";
+          } else if (msg.toLowerCase().includes("already used")) {
+            message = "Bạn đã sử dụng mã này rồi.";
+          } else {
+            message = "Mã giảm giá không tồn tại hoặc đã hết hạn.";
+          }
+        } else if (err.response.status === 404) {
+          message = "Mã giảm giá không đúng.";
+        } else {
+          message = backendError.message || message;
+        }
+      } else if (err.message) {
+        message = err.message;
       }
-    } catch (err) {
+
+      setLocalError(message);
+      // If error, maybe clear the invalid code from state if you want, 
+      // but keeping it allows user to correct it.
     } finally {
       setIsApplyingCoupon(false);
     }
@@ -207,9 +246,12 @@ const CartPage = () => {
                 mb: 4,
               }}
             >
-              <Typography variant="h6" className="font-semibold" sx={{ mb: 2 }}>
-                Apply Coupon Code
-              </Typography>
+              <Box className="flex items-center gap-2 mb-3">
+                <LocalOfferOutlinedIcon color="primary" />
+                <Typography variant="h6" className="font-semibold">
+                  Mã Giảm Giá
+                </Typography>
+              </Box>
 
               {localError && (
                 <Alert
@@ -220,40 +262,53 @@ const CartPage = () => {
                   {localError}
                 </Alert>
               )}
+              
+              {localSuccess && (
+                <Alert 
+                  severity="success" 
+                  onClose={() => setLocalSuccess(null)}
+                  sx={{ mb: 2 }}
+                >
+                  {localSuccess}
+                </Alert>
+              )}
+
               <Box className="flex gap-2">
                 <TextField
                   fullWidth
                   size="small"
                   variant="outlined"
-                  placeholder="Enter coupon"
+                  placeholder="Nhập mã voucher"
                   value={couponCodeInput}
-                  onChange={(e) => setCouponCodeInput(e.target.value)}
+                  onChange={(e) => setCouponCodeInput(e.target.value.toUpperCase())}
                   disabled={isApplyingCoupon}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "50px",
-                    },
+                  InputProps={{
+                    sx: { borderRadius: "50px" }
                   }}
                 />
                 <Button
                   variant="contained"
                   onClick={handleApplyCoupon}
-                  disabled={isApplyingCoupon}
+                  disabled={isApplyingCoupon || !couponCodeInput}
                   sx={{ borderRadius: "50px", px: 3, whiteSpace: "nowrap" }}
                 >
                   {isApplyingCoupon ? (
                     <CircularProgress size={24} color="inherit" />
                   ) : (
-                    "Apply"
+                    "Áp Dụng"
                   )}
                 </Button>
               </Box>
 
               {cartData?.couponCode && (
-                <Typography variant="body2" color="success.main" sx={{ mt: 1 }}>
-                  Applied: {cartData.couponCode} (-
-                  {formatCurrency(apiCouponDiscountAmount)})
-                </Typography>
+                <Box sx={{ mt: 2, p: 1.5, bgcolor: "success.light", borderRadius: "8px", bgOpacity: 0.1 }}>
+                  <Typography variant="body2" sx={{ color: "#1b5e20", fontWeight: 600 }}>
+                    Đã áp dụng: {cartData.couponCode}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#2e7d32" }}>
+                    Bạn được giảm {apiCouponPercentage}% (-{formatCurrency(apiCouponDiscountAmount)})
+                  </Typography>
+                </Box>
               )}
             </Paper>
 

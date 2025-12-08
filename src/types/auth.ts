@@ -11,6 +11,7 @@ export interface RegisterRequest {
   lastName: string;
   birthDate: string;
   gender: Gender;
+  avatar?: string;
 }
 
 export interface UserRole {

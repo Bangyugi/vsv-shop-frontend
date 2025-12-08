@@ -18,8 +18,10 @@ import {
   IconButton,
   Tooltip,
   Divider,
+  Box,
 } from "@mui/material";
-import { AddCircleOutline, RemoveCircleOutline } from "@mui/icons-material";
+import { AddCircleOutline, RemoveCircleOutline, CloudUpload, Delete } from "@mui/icons-material";
+import * as uploadService from "../../../services/uploadService";
 
 import { useFormik, FieldArray, getIn, FormikProvider } from "formik";
 import * as yup from "yup";
@@ -249,6 +251,46 @@ const SellerProductFormDialog: React.FC<SellerProductFormDialogProps> = ({
               </Grid>
 
               <Grid item xs={12}>
+                <Box sx={{ mb: 2 }}>
+                  <input
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    id="product-images-upload"
+                    multiple
+                    type="file"
+                    onChange={async (event) => {
+                      const files = event.currentTarget.files;
+                      if (files && files.length > 0) {
+                        try {
+                          const uploadPromises = Array.from(files).map((file) =>
+                            uploadService.uploadFile(file)
+                          );
+                          const urls = await Promise.all(uploadPromises);
+                          
+                          const currentImages = formik.values.images
+                            ? formik.values.images.split(",").map((s) => s.trim()).filter(Boolean)
+                            : [];
+                          
+                          const newImages = [...currentImages, ...urls];
+                          formik.setFieldValue("images", newImages.join(", "));
+                        } catch (error) {
+                          console.error("Error uploading product images:", error);
+                          // You might want to add a snackbar here for error handling
+                        }
+                      }
+                    }}
+                  />
+                  <label htmlFor="product-images-upload">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      startIcon={<CloudUpload />}
+                    >
+                      Upload Images
+                    </Button>
+                  </label>
+                </Box>
+
                 <TextField
                   fullWidth
                   name="images"
@@ -260,9 +302,61 @@ const SellerProductFormDialog: React.FC<SellerProductFormDialogProps> = ({
                   helperText={
                     formik.touched.images
                       ? formik.errors.images
-                      : "Separate multiple URLs with a comma (,)"
+                      : "Upload images or enter URLs separated by comma"
                   }
                 />
+
+                {formik.values.images && (
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 2 }}>
+                    {formik.values.images
+                      .split(",")
+                      .map((s) => s.trim())
+                      .filter(Boolean)
+                      .map((url, index) => (
+                        <Box
+                          key={index}
+                          sx={{
+                            position: "relative",
+                            width: 100,
+                            height: 100,
+                            border: "1px solid #ddd",
+                            borderRadius: 1,
+                            overflow: "hidden",
+                          }}
+                        >
+                          <img
+                            src={url}
+                            alt={`Product ${index + 1}`}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
+                          <IconButton
+                            size="small"
+                            sx={{
+                              position: "absolute",
+                              top: 0,
+                              right: 0,
+                              bgcolor: "rgba(255,255,255,0.7)",
+                              "&:hover": { bgcolor: "rgba(255,255,255,0.9)" },
+                            }}
+                            onClick={() => {
+                              const currentImages = formik.values.images
+                                .split(",")
+                                .map((s) => s.trim())
+                                .filter(Boolean);
+                              const newImages = currentImages.filter((_, i) => i !== index);
+                              formik.setFieldValue("images", newImages.join(", "));
+                            }}
+                          >
+                            <Delete fontSize="small" color="error" />
+                          </IconButton>
+                        </Box>
+                      ))}
+                  </Box>
+                )}
               </Grid>
 
               <Grid item xs={12} sx={{ mt: 2 }}>
