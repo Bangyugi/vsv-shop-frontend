@@ -72,6 +72,8 @@ const SellerHeader: React.FC<SellerHeaderProps> = ({
     handleAccountMenuClose();
   };
 
+  // Render
+  // console.log("SellerHeader rendered");
   return (
     <AppBar
       position="fixed"
