@@ -29,6 +29,7 @@ interface SellerSidebarProps {
   handleDrawerToggle: () => void;
 }
 
+// Navigation items for the sidebar
 const navItems = [
   { text: "Dashboard", icon: <DashboardOutlined />, path: "/seller" },
   {

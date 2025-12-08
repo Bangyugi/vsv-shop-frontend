@@ -20,7 +20,12 @@ import {
   Divider,
   Box,
 } from "@mui/material";
-import { AddCircleOutline, RemoveCircleOutline, CloudUpload, Delete } from "@mui/icons-material";
+import {
+  AddCircleOutline,
+  RemoveCircleOutline,
+  CloudUpload,
+  Delete,
+} from "@mui/icons-material";
 import * as uploadService from "../../../services/uploadService";
 
 import { useFormik, FieldArray, getIn, FormikProvider } from "formik";
@@ -38,6 +43,8 @@ interface SellerProductFormDialogProps {
   initialData: ApiProduct | null;
   allCategories: ApiCategory[];
 }
+
+// Dialog component for adding/editing a product by the seller
 
 const SellerProductFormDialog: React.FC<SellerProductFormDialogProps> = ({
   open,
@@ -266,15 +273,21 @@ const SellerProductFormDialog: React.FC<SellerProductFormDialogProps> = ({
                             uploadService.uploadFile(file)
                           );
                           const urls = await Promise.all(uploadPromises);
-                          
+
                           const currentImages = formik.values.images
-                            ? formik.values.images.split(",").map((s) => s.trim()).filter(Boolean)
+                            ? formik.values.images
+                                .split(",")
+                                .map((s) => s.trim())
+                                .filter(Boolean)
                             : [];
-                          
+
                           const newImages = [...currentImages, ...urls];
                           formik.setFieldValue("images", newImages.join(", "));
                         } catch (error) {
-                          console.error("Error uploading product images:", error);
+                          console.error(
+                            "Error uploading product images:",
+                            error
+                          );
                           // You might want to add a snackbar here for error handling
                         }
                       }
@@ -307,7 +320,9 @@ const SellerProductFormDialog: React.FC<SellerProductFormDialogProps> = ({
                 />
 
                 {formik.values.images && (
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 2 }}>
+                  <Box
+                    sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 2 }}
+                  >
                     {formik.values.images
                       .split(",")
                       .map((s) => s.trim())
@@ -347,8 +362,13 @@ const SellerProductFormDialog: React.FC<SellerProductFormDialogProps> = ({
                                 .split(",")
                                 .map((s) => s.trim())
                                 .filter(Boolean);
-                              const newImages = currentImages.filter((_, i) => i !== index);
-                              formik.setFieldValue("images", newImages.join(", "));
+                              const newImages = currentImages.filter(
+                                (_, i) => i !== index
+                              );
+                              formik.setFieldValue(
+                                "images",
+                                newImages.join(", ")
+                              );
                             }}
                           >
                             <Delete fontSize="small" color="error" />
