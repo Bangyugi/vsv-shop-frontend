@@ -13,6 +13,7 @@ import { Link as RouterLink } from "react-router-dom";
 import RevenueChart from "../components/charts/RevenueChart";
 import TopProductList from "../components/charts/TopProductList";
 
+// Card component for displaying individual stats
 const StatCard: React.FC<{
   title: string;
   value: string;
@@ -56,6 +57,7 @@ const StatCard: React.FC<{
   </Paper>
 );
 
+// Sample data for stats
 const stats = [
   {
     title: "My Total Revenue",

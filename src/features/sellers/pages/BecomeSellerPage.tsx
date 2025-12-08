@@ -30,6 +30,7 @@ const BecomeSellerPage = () => {
     navigate("/login", { state: { from: location } });
     return null;
   }
+  // Check if user is already a seller or admin
 
   const isSeller = user.roles.some((role) => role.name === "ROLE_SELLER");
   const isAdmin = user.roles.some((role) => role.name === "ROLE_ADMIN");
