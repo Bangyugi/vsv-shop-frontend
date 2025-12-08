@@ -47,6 +47,7 @@ const businessSchema = yup.object({
   logo: yup.string().url("Must be a valid URL").notRequired(),
   banner: yup.string().url("Must be a valid URL").notRequired(),
 });
+// Schema for pickup address
 
 const addressSchema = yup.object({
   fullName: yup.string().required("Full name is required"),
