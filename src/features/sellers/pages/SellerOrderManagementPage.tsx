@@ -39,6 +39,7 @@ import * as sellerService from "../../../services/sellerService";
 import type { ApiOrderData, ApiOrderStatus } from "../../../types/order";
 import { format } from "date-fns";
 
+// Get chip properties based on order status
 const getStatusChipProps = (
   status: ApiOrderStatus
 ): {
