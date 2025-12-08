@@ -17,6 +17,8 @@ const SellerLayout: React.FC = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  // Render
+  // console.log("SellerLayout rendered");
   return (
     <SellerNotificationProvider>
       <Box
