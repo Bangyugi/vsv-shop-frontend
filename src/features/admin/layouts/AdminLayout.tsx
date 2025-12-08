@@ -54,5 +54,5 @@ const AdminLayout: React.FC = () => {
     </Box>
   );
 };
-// Update UI Admin
+// Update UI 
 export default AdminLayout;
