@@ -1,5 +1,4 @@
-
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -47,10 +46,41 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
 
   const [localError, setLocalError] = useState<string | null>(null);
 
-  const allVariants = product.variants || [];
+  const allVariants = useMemo(() => product.variants || [], [product.variants]);
 
   const allColors = product.colors;
   const allSizes = product.sizes;
+
+  // --- MỚI: Tính toán số lượng tồn kho dựa trên lựa chọn ---
+  const currentStock = useMemo(() => {
+    // Trường hợp 1: Đã chọn cả màu và size -> Lấy tồn kho của variant cụ thể
+    if (selectedColor && selectedSize) {
+      const variant = allVariants.find(
+        (v) => v.color === selectedColor && v.size === selectedSize
+      );
+      return variant ? variant.quantity : 0;
+    }
+
+    // Trường hợp 2: Chưa chọn đủ -> Hiển thị tổng tồn kho của tất cả variants (hoặc variant theo màu/size đã chọn)
+    let filteredVariants = allVariants;
+    if (selectedColor) {
+      filteredVariants = filteredVariants.filter(
+        (v) => v.color === selectedColor
+      );
+    } else if (selectedSize) {
+      filteredVariants = filteredVariants.filter(
+        (v) => v.size === selectedSize
+      );
+    }
+    
+    return filteredVariants.reduce((total, v) => total + v.quantity, 0);
+  }, [selectedColor, selectedSize, allVariants]);
+  // ---------------------------------------------------------
+
+  // Reset quantity về 1 khi đổi variant để tránh logic sai (ví dụ variant cũ max 10, variant mới max 5 đang chọn 8)
+  useEffect(() => {
+    setQuantity(1);
+  }, [selectedColor, selectedSize]);
 
   const availableSizes = useMemo(() => {
     if (!selectedColor) {
@@ -110,12 +140,15 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
   };
 
   const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(event.target.value, 10);
+    let value = parseInt(event.target.value, 10);
     if (isNaN(value) || value < 1) {
-      setQuantity(1);
-    } else {
-      setQuantity(value);
+      value = 1;
+    } 
+    // --- MỚI: Validate input không vượt quá tồn kho ---
+    if (value > currentStock) {
+      value = currentStock;
     }
+    setQuantity(value);
   };
 
   const handleBlur = () => {
@@ -124,7 +157,11 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
     }
   };
 
-  const increment = () => setQuantity((prev) => prev + 1);
+  // --- CẬP NHẬT: Increment không vượt quá currentStock ---
+  const increment = () => {
+    setQuantity((prev) => (prev < currentStock ? prev + 1 : prev));
+  };
+  
   const decrement = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
   const handleAddToCartClick = async () => {
@@ -153,6 +190,12 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
       return;
     }
 
+    // Nếu số lượng = 0 (hết hàng)
+    if (selectedVariant.quantity === 0) {
+      setLocalError("This item is currently out of stock.");
+      return;
+    }
+
     await addToCart(selectedVariant.id, quantity);
   };
 
@@ -169,8 +212,8 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
   };
 
   const isWishlistAdding = isWishlistUpdating && isAddingThisToWishlist;
-
   const isOverallLoading = isCartLoading || isWishlistAdding;
+  const isOutOfStock = currentStock === 0;
 
   return (
     <Box
@@ -194,14 +237,13 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
         {product.name}
       </Typography>
 
-
       <Typography
         variant="body2"
         color="text.secondary"
         className="tracking-widest"
         sx={{ marginTop: "10px" }}
       >
-        {product.sku}
+        SKU: {product.sku}
       </Typography>
 
       <Box className="flex items-center gap-2 mt-3">
@@ -245,7 +287,6 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
         {product.shortDescription}
       </Typography>
 
-
       <Box className="mb-5">
         <Typography
           variant="subtitle1"
@@ -258,7 +299,6 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
         <Box className="flex flex-wrap gap-2">
           {allColors.map((colorName) => {
             const isSelected = selectedColor === colorName;
-
             const isDisabled = !availableColors.includes(colorName);
 
             return (
@@ -275,7 +315,6 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
                   "&.MuiChip-colorPrimary": {
                     color: "white",
                   },
-
                   "&.Mui-disabled": {
                     opacity: 0.5,
                     textDecoration: isDisabled ? "line-through" : "none",
@@ -320,7 +359,6 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
                       bgcolor: "primary.dark",
                     },
                   },
-
                   "&.Mui-disabled": {
                     opacity: 0.5,
                     textDecoration: isDisabled ? "line-through" : "none",
@@ -342,74 +380,79 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
         >
           Quantity
         </Typography>
-        <Box className="flex items-center">
-          <IconButton
-            onClick={decrement}
-            aria-label="decrease quantity"
-            disabled={isOverallLoading || isWishlistUpdating}
-            sx={{
-              border: "1px solid",
-              borderColor: "divider",
-              borderRadius: "50%",
-              color: "text.secondary",
-            }}
-          >
-            <Remove />
-          </IconButton>
-          <TextField
-            value={quantity}
-            onChange={handleQuantityChange}
-            onBlur={handleBlur}
-            type="number"
-            disabled={isOverallLoading || isWishlistUpdating}
-            inputProps={{
-              min: 1,
-              style: {
-                textAlign: "center",
-                width: "50px",
-                padding: "10px 0",
-              },
-            }}
-            sx={{
-              mx: 1,
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  border: "none",
+        <Box className="flex items-center gap-4">
+          <Box className="flex items-center">
+            <IconButton
+              onClick={decrement}
+              aria-label="decrease quantity"
+              disabled={isOverallLoading || isWishlistUpdating || quantity <= 1}
+              sx={{
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: "50%",
+                color: "text.secondary",
+              }}
+            >
+              <Remove />
+            </IconButton>
+            <TextField
+              value={quantity}
+              onChange={handleQuantityChange}
+              onBlur={handleBlur}
+              type="number"
+              disabled={isOverallLoading || isWishlistUpdating || isOutOfStock}
+              inputProps={{
+                min: 1,
+                max: currentStock, // Giới hạn max trong input HTML
+                style: {
+                  textAlign: "center",
+                  width: "50px",
+                  padding: "10px 0",
                 },
-                "&:hover fieldset": {
-                  border: "none",
+              }}
+              sx={{
+                mx: 1,
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": { border: "none" },
+                  "&:hover fieldset": { border: "none" },
+                  "&.Mui-focused fieldset": { border: "none" },
                 },
-                "&.Mui-focused fieldset": {
-                  border: "none",
+                "& input[type=number]::-webkit-inner-spin-button, & input[type=number]::-webkit-outer-spin-button":
+                  { "-webkit-appearance": "none", margin: 0 },
+                "& input[type=number]": { "-moz-appearance": "textfield" },
+              }}
+            />
+            <IconButton
+              onClick={increment}
+              aria-label="increase quantity"
+              // Disable nút tăng nếu đạt giới hạn tồn kho
+              disabled={isOverallLoading || isWishlistUpdating || quantity >= currentStock}
+              sx={{
+                border: "1px solid",
+                borderColor: "primary.main",
+                bgcolor: "primary.main",
+                color: "white",
+                borderRadius: "50%",
+                "&:hover": {
+                  bgcolor: "primary.dark",
                 },
-              },
-              "& input[type=number]::-webkit-inner-spin-button, & input[type=number]::-webkit-outer-spin-button":
-                {
-                  "-webkit-appearance": "none",
-                  margin: 0,
-                },
-              "& input[type=number]": {
-                "-moz-appearance": "textfield",
-              },
-            }}
-          />
-          <IconButton
-            onClick={increment}
-            aria-label="increase quantity"
-            disabled={isOverallLoading || isWishlistUpdating}
-            sx={{
-              border: "1px solid",
-              borderColor: "primary.main",
-              bgcolor: "primary.main",
-              color: "white",
-              borderRadius: "50%",
-              "&:hover": {
-                bgcolor: "primary.dark",
-              },
-            }}
-          >
-            <Add />
-          </IconButton>
+                "&.Mui-disabled": {
+                  bgcolor: "action.disabledBackground",
+                  borderColor: "action.disabledBackground",
+                }
+              }}
+            >
+              <Add />
+            </IconButton>
+          </Box>
+          
+          {/* --- MỚI: Hiển thị số lượng tồn kho --- */}
+          <Typography variant="body2" color={isOutOfStock ? "error" : "text.secondary"}>
+            {isOutOfStock 
+              ? "Out of stock" 
+              : `${currentStock} pieces available`}
+          </Typography>
+          {/* ------------------------------------- */}
         </Box>
       </Box>
 
@@ -425,7 +468,8 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
               <ShoppingCartOutlinedIcon />
             )
           }
-          disabled={isOverallLoading || isWishlistUpdating}
+          // Disable nút Add to Cart nếu hết hàng
+          disabled={isOverallLoading || isWishlistUpdating || isOutOfStock}
           onClick={handleAddToCartClick}
           sx={{
             flexGrow: 1,
@@ -435,13 +479,13 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
             borderRadius: "50px",
             transition: "transform 0.2s ease, box-shadow 0.2s ease",
             "&:hover": {
-              transform: "scale(1.02)",
+              transform: !isOutOfStock ? "scale(1.02)" : "none",
               boxShadow: (theme) =>
-                `0 4px 15px ${theme.palette.primary.main}40`,
+                !isOutOfStock ? `0 4px 15px ${theme.palette.primary.main}40` : "none",
             },
           }}
         >
-          {isCartLoading ? "Adding..." : "Add to Cart"}
+          {isCartLoading ? "Adding..." : isOutOfStock ? "Out of Stock" : "Add to Cart"}
         </Button>
         <IconButton
           aria-label="Add to wishlist"
@@ -473,7 +517,6 @@ const ProductInfo = ({ product, formatCurrency }: ProductInfoProps) => {
           )}
         </IconButton>
       </Box>
-
 
       <Snackbar
         open={!!localError}

@@ -9,18 +9,21 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import type { RevenueAnalyticsItem } from "../../../../types/seller";
 
-const mockRevenueData = [
-  { month: "Jan", revenue: 4000 },
-  { month: "Feb", revenue: 3000 },
-  { month: "Mar", revenue: 5000 },
-  { month: "Apr", revenue: 4500 },
-  { month: "May", revenue: 6000 },
-  { month: "Jun", revenue: 5500 },
-];
+interface RevenueChartProps {
+  data: RevenueAnalyticsItem[];
+  isLoading?: boolean;
+}
 
-const RevenueChart: React.FC = () => {
-  const formatYAxis = (tick: number) => `$${tick / 1000}M`;
+const RevenueChart: React.FC<RevenueChartProps> = ({ data, isLoading }) => {
+  const formatYAxis = (tick: number) => {
+    if (tick >= 1000000) return `$${(tick / 1000000).toFixed(1)}M`;
+    if (tick >= 1000) return `$${(tick / 1000).toFixed(0)}k`;
+    return `$${tick}`;
+  };
+
+  const hasData = data && data.length > 0;
 
   return (
     <Paper
@@ -31,44 +34,76 @@ const RevenueChart: React.FC = () => {
         height: 400,
         border: "1px solid",
         borderColor: "divider",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <Typography variant="h6" className="font-bold" sx={{ mb: 3 }}>
         Revenue Analytics (Last 6 Months)
       </Typography>
-      <Box sx={{ width: "100%", height: 320 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={mockRevenueData}
-            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-          >
-            <CartesianGrid
-              strokeDasharray="3 3"
-              vertical={false}
-              stroke="#eee"
-            />
-            <XAxis dataKey="month" stroke="#757575" />
-            <YAxis tickFormatter={formatYAxis} stroke="#757575" />
-            <Tooltip
-              formatter={(value: number) => [
-                new Intl.NumberFormat("en-US", {
-                  style: "currency",
-                  currency: "USD",
-                  maximumFractionDigits: 0,
-                }).format(value),
-                "Revenue",
-              ]}
-            />
-            <Line
-              type="monotone"
-              dataKey="revenue"
-              stroke="#00bfa6"
-              strokeWidth={2}
-              activeDot={{ r: 8 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </Box>
+      
+      {isLoading ? (
+        <Box 
+          sx={{ flexGrow: 1, display: "flex", alignItems: "center", justifyContent: "center" }}
+        >
+          <Typography color="text.secondary">Loading chart...</Typography>
+        </Box>
+      ) : !hasData ? (
+        <Box 
+          sx={{ flexGrow: 1, display: "flex", alignItems: "center", justifyContent: "center" }}
+        >
+          <Typography color="text.secondary">No data available</Typography>
+        </Box>
+      ) : (
+        <Box sx={{ width: "100%", height: 320, flexGrow: 1 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={data}
+              margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke="#eee"
+              />
+              <XAxis 
+                dataKey="month" 
+                stroke="#757575" 
+                tick={{ fontSize: 12 }}
+              />
+              <YAxis 
+                tickFormatter={formatYAxis} 
+                stroke="#757575" 
+                tick={{ fontSize: 12 }}
+                width={40}
+              />
+              <Tooltip
+                formatter={(value: number) => [
+                  new Intl.NumberFormat("en-US", {
+                    style: "currency",
+                    currency: "USD",
+                    minimumFractionDigits: 0,
+                  }).format(value),
+                  "Revenue",
+                ]}
+                contentStyle={{ 
+                  borderRadius: "8px", 
+                  border: "none", 
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)" 
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="revenue"
+                stroke="#00bfa6"
+                strokeWidth={3}
+                activeDot={{ r: 6, strokeWidth: 0 }}
+                dot={{ r: 3, strokeWidth: 0, fill: "#00bfa6" }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </Box>
+      )}
     </Paper>
   );
 };

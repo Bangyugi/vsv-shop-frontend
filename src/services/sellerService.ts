@@ -4,6 +4,7 @@ import type {
   SellerRegistrationRequest,
   SellerRegistrationResponse,
   ApiSellerData,
+  GetSellerDashboardResponse, // Import type mới
 } from "../types/seller";
 import type {
   ApiProduct,
@@ -61,6 +62,18 @@ export const updateMySellerProfile = (
       throw error;
     });
 };
+
+// --- New Function for Dashboard Stats ---
+export const getSellerDashboardStats = (): Promise<GetSellerDashboardResponse> => {
+  return api
+    .get<GetSellerDashboardResponse>(`${BASE_URL}/reports/seller/dashboard`)
+    .then((res) => res.data)
+    .catch((error) => {
+      console.error("Error fetching seller dashboard stats:", error);
+      throw error;
+    });
+};
+// ----------------------------------------
 
 export const getMyProducts = (
   page: number,

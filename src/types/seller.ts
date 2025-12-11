@@ -78,3 +78,20 @@ export interface SellerRegistrationRequest {
 }
 
 export type SellerRegistrationResponse = ApiResponse<ApiSellerData>;
+
+// --- New Types for Seller Dashboard API ---
+
+export interface RevenueAnalyticsItem {
+  month: string;
+  revenue: number;
+}
+
+export interface SellerDashboardData {
+  totalRevenue: number;
+  newOrders: number;
+  productsInStock: number;
+  pendingOrders: number;
+  revenueAnalytics: RevenueAnalyticsItem[];
+}
+
+export type GetSellerDashboardResponse = ApiResponse<SellerDashboardData>;

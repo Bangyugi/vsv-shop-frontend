@@ -1,5 +1,14 @@
-import React from "react";
-import { Box, Grid, Paper, Typography, Button, Stack } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  Grid,
+  Paper,
+  Typography,
+  Button,
+  Stack,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
 import {
   AttachMoneyOutlined,
   ShoppingCartOutlined,
@@ -12,14 +21,26 @@ import { motion } from "framer-motion";
 import { Link as RouterLink } from "react-router-dom";
 import RevenueChart from "../components/charts/RevenueChart";
 import TopProductList from "../components/charts/TopProductList";
+import * as sellerService from "../../../services/sellerService";
+import type { SellerDashboardData } from "../../../types/seller";
+
+// Helper to format currency
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 2,
+  }).format(amount);
+};
 
 // Card component for displaying individual stats
 const StatCard: React.FC<{
   title: string;
-  value: string;
+  value: string | number;
   icon: React.ReactElement;
   color: string;
-}> = ({ title, value, icon, color }) => (
+  loading?: boolean;
+}> = ({ title, value, icon, color, loading }) => (
   <Paper
     elevation={0}
     sx={{
@@ -30,15 +51,20 @@ const StatCard: React.FC<{
       borderRadius: "12px",
       border: "1px solid",
       borderColor: "divider",
+      height: "100%",
     }}
   >
     <Box>
-      <Typography color="text.secondary" sx={{ mb: 0.5 }}>
+      <Typography color="text.secondary" sx={{ mb: 0.5, fontSize: "0.9rem" }}>
         {title}
       </Typography>
-      <Typography variant="h4" component="h2" className="font-bold">
-        {value}
-      </Typography>
+      {loading ? (
+        <CircularProgress size={24} sx={{ mt: 1 }} color="inherit" />
+      ) : (
+        <Typography variant="h4" component="h2" className="font-bold">
+          {value}
+        </Typography>
+      )}
     </Box>
     <Box
       sx={{
@@ -50,40 +76,13 @@ const StatCard: React.FC<{
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
       }}
     >
       {React.cloneElement(icon, { sx: { fontSize: 30 } })}
     </Box>
   </Paper>
 );
-
-// Sample data for stats
-const stats = [
-  {
-    title: "My Total Revenue",
-    value: "$12,875.00",
-    icon: <AttachMoneyOutlined />,
-    color: "primary.main",
-  },
-  {
-    title: "My New Orders",
-    value: "150",
-    icon: <ShoppingCartOutlined />,
-    color: "secondary.main",
-  },
-  {
-    title: "Products in Stock",
-    value: "89",
-    icon: <Inventory2Outlined />,
-    color: "success.main",
-  },
-  {
-    title: "Pending Orders",
-    value: "12",
-    icon: <HourglassTopOutlined />,
-    color: "warning.main",
-  },
-];
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -101,6 +100,61 @@ const itemVariants = {
 };
 
 const SellerDashboardPage = () => {
+  const [dashboardData, setDashboardData] = useState<SellerDashboardData | null>(
+    null
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await sellerService.getSellerDashboardStats();
+        if (response.code === 200 && response.data) {
+          setDashboardData(response.data);
+        } else {
+          throw new Error(response.message || "Failed to fetch dashboard data");
+        }
+      } catch (err: any) {
+        console.error("Dashboard fetch error:", err);
+        setError(err.message || "Could not load dashboard statistics.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  const stats = [
+    {
+      title: "My Total Revenue",
+      value: dashboardData ? formatCurrency(dashboardData.totalRevenue) : "$0.00",
+      icon: <AttachMoneyOutlined />,
+      color: "primary.main",
+    },
+    {
+      title: "My New Orders",
+      value: dashboardData?.newOrders ?? 0,
+      icon: <ShoppingCartOutlined />,
+      color: "secondary.main",
+    },
+    {
+      title: "Products in Stock",
+      value: dashboardData?.productsInStock ?? 0,
+      icon: <Inventory2Outlined />,
+      color: "success.main",
+    },
+    {
+      title: "Pending Orders",
+      value: dashboardData?.pendingOrders ?? 0,
+      icon: <HourglassTopOutlined />,
+      color: "warning.main",
+    },
+  ];
+
   return (
     <Box
       component={motion.div}
@@ -116,6 +170,12 @@ const SellerDashboardPage = () => {
       >
         Seller Dashboard
       </Typography>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
 
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {stats.map((stat) => (
@@ -133,6 +193,7 @@ const SellerDashboardPage = () => {
               value={stat.value}
               icon={stat.icon}
               color={stat.color}
+              loading={isLoading}
             />
           </Grid>
         ))}
@@ -146,7 +207,10 @@ const SellerDashboardPage = () => {
           component={motion.div}
           variants={itemVariants}
         >
-          <RevenueChart />
+          <RevenueChart 
+            data={dashboardData?.revenueAnalytics || []} 
+            isLoading={isLoading} 
+          />
         </Grid>
 
         <Grid item xs={12} lg={4}>
@@ -170,6 +234,8 @@ const SellerDashboardPage = () => {
                     startIcon={<Add />}
                     component={RouterLink}
                     to="/seller/products"
+                    fullWidth
+                    sx={{ justifyContent: "flex-start", py: 1.2 }}
                   >
                     Add New Product
                   </Button>
@@ -178,6 +244,8 @@ const SellerDashboardPage = () => {
                     startIcon={<ListAlt />}
                     component={RouterLink}
                     to="/seller/orders"
+                    fullWidth
+                    sx={{ justifyContent: "flex-start", py: 1.2 }}
                   >
                     View Pending Orders
                   </Button>
