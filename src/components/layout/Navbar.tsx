@@ -22,6 +22,7 @@ import {
   CircularProgress,
   Alert,
   Badge,
+  ListItemAvatar,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
@@ -32,10 +33,14 @@ import AccountCircleOutlined from "@mui/icons-material/AccountCircleOutlined";
 import LogoutOutlined from "@mui/icons-material/LogoutOutlined";
 import SettingsOutlined from "@mui/icons-material/SettingsOutlined";
 import AdminPanelSettingsOutlined from "@mui/icons-material/AdminPanelSettingsOutlined";
+import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined";
+import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
+
 import MegaMenu from "./MenagMenu";
 import { useAuth } from "../../contexts/AuthContext";
 import { useCart } from "../../contexts/CartContext";
 import { useWishlist } from "../../contexts/WishlistContext";
+import { useNotification } from "../../contexts/NotificationContext";
 
 import * as categoryService from "../../services/categoryService";
 import type { ApiCategory, MegaMenuData } from "../../types/category";
@@ -48,6 +53,8 @@ const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const { cartData } = useCart();
   const { wishlistData } = useWishlist();
+
+  const { notifications, unreadCount, markAsRead } = useNotification();
 
   const isAdmin =
     user?.roles.some((role) => role.name === "ROLE_ADMIN") || false;
@@ -65,7 +72,9 @@ const Navbar = () => {
     null
   );
   const timeoutRef = useRef<number | null>(null);
+
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -102,11 +111,21 @@ const Navbar = () => {
   const handleMenu = (event: React.MouseEvent<HTMLElement>) =>
     setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
+
+  const handleNotifOpen = (event: React.MouseEvent<HTMLElement>) =>
+    setNotifAnchorEl(event.currentTarget);
+  const handleNotifClose = () => setNotifAnchorEl(null);
+
   const handleLogout = () => {
     logout();
     handleClose();
   };
   const handleDrawerToggle = () => setMobileOpen((prevState) => !prevState);
+
+  const handleNotificationClick = (id: number) => {
+    markAsRead(id);
+    handleNotifClose();
+  };
 
   const handleMouseEnter = (
     event: React.MouseEvent<HTMLElement>,
@@ -131,6 +150,7 @@ const Navbar = () => {
   };
 
   const isMegaMenuOpen = Boolean(megaMenuAnchorEl);
+  const openNotif = Boolean(notifAnchorEl);
 
   const cartItemCount = cartData?.totalItem || 0;
   const wishlistCount = wishlistData?.products?.length || 0;
@@ -423,6 +443,17 @@ const Navbar = () => {
 
             {isAuthenticated && user ? (
               <>
+                {/* Notification Icon for User */}
+                <IconButton
+                  color="inherit"
+                  onClick={handleNotifOpen}
+                  sx={{ display: { xs: "none", sm: "flex" } }}
+                >
+                  <Badge badgeContent={unreadCount} color="error">
+                    <NotificationsOutlinedIcon />
+                  </Badge>
+                </IconButton>
+
                 <IconButton
                   component={RouterLink}
                   to="/wishlist"
@@ -454,6 +485,87 @@ const Navbar = () => {
                 <IconButton onClick={handleMenu} sx={{ p: 0 }}>
                   <Avatar alt={user.firstName} src={user.avatar} />
                 </IconButton>
+
+                {/* Notification Dropdown for User */}
+                <Menu
+                  anchorEl={notifAnchorEl}
+                  open={openNotif}
+                  onClose={handleNotifClose}
+                  PaperProps={{
+                    elevation: 0,
+                    sx: {
+                      width: 320,
+                      maxHeight: 400,
+                      filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.1))",
+                      mt: 1.5,
+                      "&:before": {
+                        content: '""',
+                        display: "block",
+                        position: "absolute",
+                        top: 0,
+                        right: 14,
+                        width: 10,
+                        height: 10,
+                        bgcolor: "background.paper",
+                        transform: "translateY(-50%) rotate(45deg)",
+                        zIndex: 0,
+                      },
+                    },
+                  }}
+                  transformOrigin={{ horizontal: "right", vertical: "top" }}
+                  anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                >
+                  <Box sx={{ p: 2, borderBottom: "1px solid #eee" }}>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      Notifications
+                    </Typography>
+                  </Box>
+                  <List sx={{ p: 0, maxHeight: 300, overflowY: "auto" }}>
+                    {notifications.length > 0 ? (
+                      notifications.map((notif) => (
+                        <ListItem
+                          key={notif.id}
+                          button
+                          component={notif.link ? RouterLink : "div"}
+                          to={notif.link || "#"}
+                          onClick={() => handleNotificationClick(notif.id)}
+                          sx={{
+                            bgcolor: notif.isRead ? "inherit" : "action.hover",
+                          }}
+                        >
+                          <ListItemAvatar>
+                            <Avatar sx={{ bgcolor: "success.light" }}>
+                              <LocalShippingOutlinedIcon />
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText
+                            primary={notif.message}
+                            secondary={new Date(
+                              notif.createdAt
+                            ).toLocaleDateString()}
+                            primaryTypographyProps={{
+                              variant: "body2",
+                              fontWeight: notif.isRead ? "normal" : "bold",
+                              fontSize: "0.9rem",
+                            }}
+                          />
+                        </ListItem>
+                      ))
+                    ) : (
+                      <ListItem>
+                        <ListItemText
+                          primary="No notifications yet"
+                          sx={{
+                            textAlign: "center",
+                            py: 2,
+                            color: "text.secondary",
+                          }}
+                        />
+                      </ListItem>
+                    )}
+                  </List>
+                </Menu>
+
                 <Menu
                   id="menu-appbar"
                   anchorEl={anchorEl}

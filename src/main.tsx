@@ -1,27 +1,33 @@
-import ReactDOM from "react-dom/client";
+// src/main.tsx
+import "./polyfills"; // Fix lỗi "global is not defined" (luôn để dòng này đầu tiên)
 
-import { ThemeProvider } from "@mui/material/styles";
-import { CssBaseline } from "@mui/material";
-import App from "./App";
-import theme from "./theme";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 import "./styles/index.css";
+import App from "./App.tsx";
+
+import { AuthProvider } from "./contexts/AuthContext.tsx";
 import { BrowserRouter } from "react-router-dom";
+import { CartProvider } from "./contexts/CartContext.tsx";
+import { WishlistProvider } from "./contexts/WishlistContext.tsx";
 
-import { AuthProvider } from "./contexts/AuthContext";
-import { CartProvider } from "./contexts/CartContext";
-import { WishlistProvider } from "./contexts/WishlistContext";
+import { ThemeProvider, CssBaseline } from "@mui/material";
+import theme from "./theme";
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <BrowserRouter>
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <BrowserRouter>
       <AuthProvider>
-        <WishlistProvider>
-          <CartProvider>
-            <App />
-          </CartProvider>
-        </WishlistProvider>
+        <CartProvider>
+          <WishlistProvider>
+            {/* Bọc App bằng ThemeProvider để áp dụng màu sắc/giao diện cũ */}
+            <ThemeProvider theme={theme}>
+              <CssBaseline /> {/* Reset CSS chuẩn của MUI */}
+              <App />
+            </ThemeProvider>
+          </WishlistProvider>
+        </CartProvider>
       </AuthProvider>
-    </ThemeProvider>
-  </BrowserRouter>
+    </BrowserRouter>
+  </StrictMode>
 );

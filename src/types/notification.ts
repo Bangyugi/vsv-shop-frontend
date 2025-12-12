@@ -4,11 +4,22 @@ export interface ApiNotificationSummary {
   pendingOrderCount: number;
 }
 
+export interface NotificationMessage {
+  id: number;
+  message: string;
+  isRead: boolean;
+  link?: string;
+  createdAt: string;
+}
+
 export type GetNotificationSummaryResponse =
   ApiResponse<ApiNotificationSummary>;
 
-export interface SellerNotificationContextType {
-  summary: ApiNotificationSummary | null;
-  isLoading: boolean;
-  fetchSummary: () => Promise<void>;
+export interface NotificationContextType {
+  notifications: NotificationMessage[];
+  unreadCount: number;
+  isConnected: boolean;
+  markAsRead: (id: number) => void;
+  markAllAsRead: () => void;
+  clearNotifications: () => void;
 }

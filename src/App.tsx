@@ -23,6 +23,8 @@ import VerificationPage from "./features/auth/pages/VerificationPage";
 import { useCart } from "./contexts/CartContext";
 import { useWishlist } from "./contexts/WishlistContext";
 
+import { NotificationProvider } from "./contexts/NotificationContext";
+
 import AdminRoute from "./components/common/AdminRoute";
 import AdminLayout from "./features/admin/layouts/AdminLayout";
 import DashboardPage from "./features/admin/pages/DashboardPage";
@@ -79,92 +81,94 @@ function App() {
     useWishlist();
 
   return (
-    <Box className="flex flex-col min-h-screen">
-      <LayoutManager>
-        <Routes>
-          <Route element={<AdminRoute />}>
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<DashboardPage />} />
-              <Route path="users" element={<UserManagementPage />} />
-              <Route path="sellers" element={<SellerManagementPage />} />
-              <Route path="orders" element={<OrderManagementPage />} />
-              <Route path="categories" element={<CategoryManagementPage />} />
-              <Route path="products" element={<ProductManagementPage />} />
-              <Route path="*" element={<DashboardPage />} />
+    <NotificationProvider>
+      <Box className="flex flex-col min-h-screen">
+        <LayoutManager>
+          <Routes>
+            <Route element={<AdminRoute />}>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<DashboardPage />} />
+                <Route path="users" element={<UserManagementPage />} />
+                <Route path="sellers" element={<SellerManagementPage />} />
+                <Route path="orders" element={<OrderManagementPage />} />
+                <Route path="categories" element={<CategoryManagementPage />} />
+                <Route path="products" element={<ProductManagementPage />} />
+                <Route path="*" element={<DashboardPage />} />
+              </Route>
             </Route>
-          </Route>
 
-          <Route element={<SellerRoute />}>
-            <Route path="/seller" element={<SellerLayout />}>
-              <Route index element={<SellerDashboardPage />} />
-              <Route path="dashboard" element={<SellerDashboardPage />} />
-              <Route
-                path="products"
-                element={<SellerProductManagementPage />}
-              />
-              <Route path="orders" element={<SellerOrderManagementPage />} />
-              <Route path="analytics" element={<SellerAnalyticsPage />} />
-              <Route path="profile" element={<SellerProfilePage />} />
-              <Route path="*" element={<SellerDashboardPage />} />
+            <Route element={<SellerRoute />}>
+              <Route path="/seller" element={<SellerLayout />}>
+                <Route index element={<SellerDashboardPage />} />
+                <Route path="dashboard" element={<SellerDashboardPage />} />
+                <Route
+                  path="products"
+                  element={<SellerProductManagementPage />}
+                />
+                <Route path="orders" element={<SellerOrderManagementPage />} />
+                <Route path="analytics" element={<SellerAnalyticsPage />} />
+                <Route path="profile" element={<SellerProfilePage />} />
+                <Route path="*" element={<SellerDashboardPage />} />
+              </Route>
             </Route>
-          </Route>
 
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/verify" element={<VerificationPage />} />
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/wishlist" element={<WishlistPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/profile" element={<UserProfilePage />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/product/:productId" element={<ProductDetailPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route
-            path="/profile/orders/:orderId"
-            element={<OrderDetailPage />}
-          />
-          <Route path="/shop" element={<ShoppingPage />} />
-          <Route path="/shop/:category" element={<ShoppingPage />} />
-          <Route path="/become-seller" element={<BecomeSellerPage />} />
-        </Routes>
-      </LayoutManager>
-      <Snackbar
-        open={cartSnackbar?.open}
-        autoHideDuration={4000}
-        onClose={closeCartSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        {cartSnackbar ? (
-          <Alert
-            onClose={closeCartSnackbar}
-            severity={cartSnackbar.severity}
-            variant="filled"
-            sx={{ width: "100%" }}
-          >
-            {cartSnackbar.message}
-          </Alert>
-        ) : undefined}
-      </Snackbar>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/verify" element={<VerificationPage />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/wishlist" element={<WishlistPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/profile" element={<UserProfilePage />} />
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/product/:productId" element={<ProductDetailPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route
+              path="/profile/orders/:orderId"
+              element={<OrderDetailPage />}
+            />
+            <Route path="/shop" element={<ShoppingPage />} />
+            <Route path="/shop/:category" element={<ShoppingPage />} />
+            <Route path="/become-seller" element={<BecomeSellerPage />} />
+          </Routes>
+        </LayoutManager>
+        <Snackbar
+          open={cartSnackbar?.open}
+          autoHideDuration={4000}
+          onClose={closeCartSnackbar}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          {cartSnackbar ? (
+            <Alert
+              onClose={closeCartSnackbar}
+              severity={cartSnackbar.severity}
+              variant="filled"
+              sx={{ width: "100%" }}
+            >
+              {cartSnackbar.message}
+            </Alert>
+          ) : undefined}
+        </Snackbar>
 
-      <Snackbar
-        open={wishlistSnackbar?.open}
-        autoHideDuration={4000}
-        onClose={closeWishlistSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        {wishlistSnackbar ? (
-          <Alert
-            onClose={closeWishlistSnackbar}
-            severity={wishlistSnackbar.severity}
-            variant="filled"
-            sx={{ width: "100%" }}
-          >
-            {wishlistSnackbar.message}
-          </Alert>
-        ) : undefined}
-      </Snackbar>
-    </Box>
+        <Snackbar
+          open={wishlistSnackbar?.open}
+          autoHideDuration={4000}
+          onClose={closeWishlistSnackbar}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          {wishlistSnackbar ? (
+            <Alert
+              onClose={closeWishlistSnackbar}
+              severity={wishlistSnackbar.severity}
+              variant="filled"
+              sx={{ width: "100%" }}
+            >
+              {wishlistSnackbar.message}
+            </Alert>
+          ) : undefined}
+        </Snackbar>
+      </Box>
+    </NotificationProvider>
   );
 }
 

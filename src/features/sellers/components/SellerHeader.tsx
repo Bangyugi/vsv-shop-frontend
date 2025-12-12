@@ -1,3 +1,4 @@
+// src/features/sellers/components/SellerHeader.tsx
 import React, { useState } from "react";
 import {
   AppBar,
@@ -24,12 +25,13 @@ import {
   AccountCircleOutlined,
   HomeOutlined,
   StorefrontOutlined,
-  ShoppingCartOutlined,
+  InfoOutlined,
 } from "@mui/icons-material";
 import { useAuth } from "../../../contexts/AuthContext";
 import { Link as RouterLink } from "react-router-dom";
 
-import { useSellerNotification } from "../../../contexts/SellerNotificationContext";
+// Sử dụng hook mới
+import { useNotification } from "../../../contexts/NotificationContext";
 
 interface SellerHeaderProps {
   drawerWidth: number;
@@ -42,8 +44,8 @@ const SellerHeader: React.FC<SellerHeaderProps> = ({
 }) => {
   const { user, logout } = useAuth();
 
-  const { summary } = useSellerNotification();
-  const notificationCount = summary?.pendingOrderCount || 0;
+  // Thay thế useSellerNotification bằng useNotification global
+  const { notifications, unreadCount, markAsRead } = useNotification();
 
   const [accountMenuAnchor, setAccountMenuAnchor] =
     useState<null | HTMLElement>(null);
@@ -72,8 +74,13 @@ const SellerHeader: React.FC<SellerHeaderProps> = ({
     handleAccountMenuClose();
   };
 
+  const handleNotificationClick = (id: number, link?: string) => {
+    markAsRead(id);
+    handleNotifMenuClose();
+    // Nếu có link thì react-router sẽ handle thông qua component prop
+  };
+
   // Render
-  // console.log("SellerHeader rendered");
   return (
     <AppBar
       position="fixed"
@@ -107,7 +114,7 @@ const SellerHeader: React.FC<SellerHeaderProps> = ({
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <IconButton color="inherit" onClick={handleNotifMenuOpen}>
-            <Badge badgeContent={notificationCount} color="error">
+            <Badge badgeContent={unreadCount} color="error">
               <NotificationsOutlined />
             </Badge>
           </IconButton>
@@ -129,6 +136,8 @@ const SellerHeader: React.FC<SellerHeaderProps> = ({
               sx={{ width: 40, height: 40 }}
             />
           </IconButton>
+
+          {/* Menu Notifications */}
           <Menu
             anchorEl={notifMenuAnchor}
             id="notification-menu"
@@ -141,6 +150,7 @@ const SellerHeader: React.FC<SellerHeaderProps> = ({
                 filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.1))",
                 mt: 1.5,
                 width: 360,
+                maxHeight: 480,
                 "&:before": {
                   content: '""',
                   display: "block",
@@ -173,28 +183,41 @@ const SellerHeader: React.FC<SellerHeaderProps> = ({
             </Box>
             <Divider />
             <List sx={{ p: 0, maxHeight: 400, overflowY: "auto" }}>
-              {notificationCount > 0 ? (
-                <ListItem
-                  button
-                  component={RouterLink}
-                  to="/seller/orders"
-                  onClick={handleNotifMenuClose}
-                >
-                  <ListItemAvatar>
-                    <Avatar sx={{ bgcolor: "secondary.main" }}>
-                      <ShoppingCartOutlined />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={`You have ${notificationCount} new order(s)`}
-                    secondary="Click to view pending orders"
-                  />
-                </ListItem>
+              {notifications.length > 0 ? (
+                notifications.map((notif) => (
+                  <ListItem
+                    key={notif.id}
+                    button
+                    component={notif.link ? RouterLink : "div"}
+                    to={notif.link || "#"}
+                    onClick={() =>
+                      handleNotificationClick(notif.id, notif.link)
+                    }
+                    sx={{
+                      bgcolor: notif.isRead ? "inherit" : "action.hover",
+                      alignItems: "flex-start",
+                    }}
+                  >
+                    <ListItemAvatar>
+                      <Avatar sx={{ bgcolor: "primary.light" }}>
+                        <InfoOutlined />
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={notif.message}
+                      secondary={new Date(notif.createdAt).toLocaleString()}
+                      primaryTypographyProps={{
+                        variant: "body2",
+                        fontWeight: notif.isRead ? "normal" : "bold",
+                      }}
+                    />
+                  </ListItem>
+                ))
               ) : (
                 <ListItem>
                   <ListItemText
-                    primary="No new notifications"
-                    secondary="You're all caught up."
+                    primary="No notifications yet"
+                    secondary="We'll let you know when something happens."
                     sx={{ textAlign: "center", py: 3 }}
                   />
                 </ListItem>
