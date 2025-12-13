@@ -52,6 +52,7 @@ type OrderStatusTab =
   | "Delivered"
   | "Cancelled"
   | "Returned";
+
 const tabConfig: Record<OrderStatusTab, string> = {
   all: "All",
   Processing: "Processing",
@@ -60,6 +61,7 @@ const tabConfig: Record<OrderStatusTab, string> = {
   Cancelled: "Cancelled",
   Returned: "Returned",
 };
+
 const validStatuses: OrderStatusTab[] = [
   "all",
   "Processing",
@@ -68,6 +70,7 @@ const validStatuses: OrderStatusTab[] = [
   "Cancelled",
   "Returned",
 ];
+
 const getStatusChipColor = (
   status: ApiOrderStatus
 ): "success" | "info" | "default" | "error" | "warning" => {
@@ -88,6 +91,7 @@ const getStatusChipColor = (
       return "default";
   }
 };
+
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -205,13 +209,19 @@ const OrderCard = forwardRef<
   </motion.div>
 ));
 
-const ITEMS_PER_PAGE = 3;
+// Updated default page size to 5 (or 10) to match better with server side pagination
+const PAGE_SIZE = 5;
 
 const OrderHistory = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { latestOrderUpdate, latestOrderEventType } = useNotification();
 
-  const [allOrders, setAllOrders] = useState<ApiOrderData[]>([]);
+  // Changed: Store only the current page's orders
+  const [orders, setOrders] = useState<ApiOrderData[]>([]);
+  // Added: Pagination state
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalElements, setTotalElements] = useState(0);
+  
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -222,43 +232,71 @@ const OrderHistory = () => {
     severity: "success" | "error" | "info";
   } | null>(null);
 
+  // Helper to parse URL params
+  const getActiveTabFromUrl = (): OrderStatusTab => {
+    const statusFromUrl = searchParams.get("status") as OrderStatusTab;
+    return validStatuses.includes(statusFromUrl) ? statusFromUrl : "all";
+  };
+  const getPageFromUrl = (): number => {
+    const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);
+    return isNaN(pageFromUrl) || pageFromUrl < 1 ? 1 : pageFromUrl;
+  };
+
+  const activeTab = getActiveTabFromUrl();
+  const page = getPageFromUrl();
+
   const fetchOrders = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await orderService.getMyOrders();
-      if (response.code === 200) {
-        setAllOrders(response.data || []);
+      // Call API with pagination parameters
+      const response = await orderService.getMyOrders({
+        pageNo: page,
+        pageSize: PAGE_SIZE,
+        sortBy: "orderDate",
+        sortDir: "DESC",
+        // Note: Currently backend doc doesn't explicitly support status filtering
+        // so we fetch all and filter client-side for the current page view if necessary.
+      });
+
+      // Handle both 'data' and 'result' based on the discrepancy in docs/types
+      const responseData = response.data || response.result;
+
+      if (response.code === 200 && responseData) {
+        // Map the paginated response
+        setOrders(responseData.pageContent || []);
+        setTotalPages(responseData.totalPages || 1);
+        setTotalElements(responseData.totalElements || 0);
       } else {
         throw new Error(response.message || "Failed to fetch orders");
       }
     } catch (err: any) {
+      console.error(err);
       setError(
         err.response?.data?.message ||
           err.message ||
           "An error occurred while fetching orders."
       );
+      setOrders([]);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [page]); // Re-fetch when page changes
 
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
 
-  // --- Real-time Update Logic (Updated) ---
+  // --- Real-time Update Logic ---
   useEffect(() => {
     if (latestOrderUpdate && latestOrderEventType) {
-      // Chỉ lắng nghe sự kiện dành cho Buyer
       if (latestOrderEventType === "BUYER_ORDER_UPDATE") {
-        setAllOrders((prevOrders) => {
+        setOrders((prevOrders) => {
           const orderIndex = prevOrders.findIndex(
             (o) => o.orderId === latestOrderUpdate.orderId
           );
 
           if (orderIndex > -1) {
-            // Update existing order status
             const updatedOrders = [...prevOrders];
             updatedOrders[orderIndex] = latestOrderUpdate;
             setSnackbar({
@@ -268,26 +306,12 @@ const OrderHistory = () => {
             });
             return updatedOrders;
           }
-          // Trường hợp hiếm: Buyer nhận update nhưng chưa có trong list (có thể do phân trang hoặc lỗi sync)
-          // Tạm thời không tự thêm vào nếu không thấy (để tránh lỗi data), hoặc fetch lại list
           return prevOrders;
         });
       }
-      // Lưu ý: Buyer cũng có thể nhận sự kiện khác nếu backend gửi nhầm, nhưng logic UI chỉ nên phản ứng với BUYER_ORDER_UPDATE
     }
   }, [latestOrderUpdate, latestOrderEventType]);
   // -----------------------------
-
-  const getActiveTabFromUrl = (): OrderStatusTab => {
-    const statusFromUrl = searchParams.get("status") as OrderStatusTab;
-    return validStatuses.includes(statusFromUrl) ? statusFromUrl : "all";
-  };
-  const getPageFromUrl = (): number => {
-    const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);
-    return isNaN(pageFromUrl) || pageFromUrl < 1 ? 1 : pageFromUrl;
-  };
-  const activeTab = getActiveTabFromUrl();
-  const page = getPageFromUrl();
 
   const handleChangeTab = (
     _event: React.SyntheticEvent,
@@ -295,44 +319,36 @@ const OrderHistory = () => {
   ) => {
     const newParams = new URLSearchParams(searchParams);
     newParams.set("status", newValue);
+    // Reset to page 1 when changing filters
     newParams.set("page", "1");
     setSearchParams(newParams);
   };
+
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
     value: number
   ) => {
     const newParams = new URLSearchParams(searchParams);
     newParams.set("page", value.toString());
-    setSearchParams(newParams);
-  };
-  const filteredOrders = useMemo(() => {
-    if (activeTab === "all") {
-      return allOrders;
+    // Keep the current status filter
+    if (activeTab !== "all") {
+      newParams.set("status", activeTab);
     }
-    return allOrders.filter(
+    setSearchParams(newParams);
+    // window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Filter orders for the current page based on the active tab.
+  // Note: Since pagination is server-side and we don't have a backend status filter,
+  // this might result in empty lists for some pages if the items don't match the tab.
+  const displayedOrders = useMemo(() => {
+    if (activeTab === "all") {
+      return orders;
+    }
+    return orders.filter(
       (order) => mapApiStatusToTab(order.orderStatus) === activeTab
     );
-  }, [activeTab, allOrders]);
-  const pageCount = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
-  const paginatedOrders = useMemo(() => {
-    const startIndex = (page - 1) * ITEMS_PER_PAGE;
-    const validStartIndex = Math.max(0, startIndex);
-    if (validStartIndex >= filteredOrders.length) {
-      return [];
-    }
-    return filteredOrders.slice(
-      validStartIndex,
-      validStartIndex + ITEMS_PER_PAGE
-    );
-  }, [page, filteredOrders]);
-  useEffect(() => {
-    if (page > pageCount && pageCount > 0) {
-      const newParams = new URLSearchParams(searchParams);
-      newParams.set("page", pageCount.toString());
-      setSearchParams(newParams, { replace: true });
-    }
-  }, [page, pageCount, searchParams, setSearchParams]);
+  }, [activeTab, orders]);
 
   const handleOpenReview = (item: ApiOrderItem) => {
     setReviewingItem(item);
@@ -349,6 +365,7 @@ const OrderHistory = () => {
       message: "Review submitted successfully! Thank you.",
       severity: "success",
     });
+    // Refresh to update the "Reviewed" status
     fetchOrders();
   };
 
@@ -399,7 +416,7 @@ const OrderHistory = () => {
           <Alert severity="error" sx={{ my: 2 }}>
             {error}
           </Alert>
-        ) : filteredOrders.length === 0 ? (
+        ) : displayedOrders.length === 0 ? (
           <Box
             className="flex flex-col items-center justify-center text-center gap-3"
             sx={{ minHeight: 300, color: "text.secondary" }}
@@ -407,14 +424,16 @@ const OrderHistory = () => {
             <ShoppingBagOutlinedIcon sx={{ fontSize: "4rem" }} />
             <Typography variant="h6">No orders found</Typography>
             <Typography>
-              There are currently no orders in this status.
+              {activeTab === "all"
+                ? "You haven't placed any orders yet."
+                : `No orders found in this page for '${tabConfig[activeTab]}'.`}
             </Typography>
           </Box>
         ) : (
           <>
             <Box className="space-y-5">
               <AnimatePresence mode="popLayout">
-                {paginatedOrders.map((order) => (
+                {displayedOrders.map((order) => (
                   <OrderCard
                     key={order.orderId}
                     order={order}
@@ -425,7 +444,8 @@ const OrderHistory = () => {
               </AnimatePresence>
             </Box>
 
-            {pageCount > 1 && (
+            {/* Pagination Control */}
+            {totalPages > 1 && (
               <Box
                 sx={{
                   display: "flex",
@@ -435,10 +455,12 @@ const OrderHistory = () => {
                 }}
               >
                 <Pagination
-                  count={pageCount}
-                  page={Math.min(page, pageCount)}
+                  count={totalPages}
+                  page={page}
                   onChange={handlePageChange}
                   color="primary"
+                  showFirstButton
+                  showLastButton
                 />
               </Box>
             )}

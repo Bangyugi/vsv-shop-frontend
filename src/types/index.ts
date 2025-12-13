@@ -22,7 +22,9 @@ export interface ApiResponse<T> {
   code: number;
   message: string;
   data: T | null;
+  result?: T; // Added to support the new API response structure if it uses 'result'
 }
+
 export interface CartItem {
   id: number;
   name: string;

@@ -66,7 +66,16 @@ export interface ApiOrderData {
   orderItems: ApiOrderItem[];
 }
 
-export type GetMyOrdersResponse = ApiResponse<ApiOrderData[]>;
+export interface OrderPageData {
+  pageContent: ApiOrderData[];
+  pageNo: number;
+  pageSize: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+// Updated: Response is now a paginated object
+export type GetMyOrdersResponse = ApiResponse<OrderPageData>;
 
 export interface CreateOrderRequest {
   addressId?: number;
@@ -88,12 +97,14 @@ export interface ApiPaymentLinkData {
 
 export type CancelOrderResponse = ApiResponse<ApiOrderData>;
 
-export interface OrderPageData {
-  pageContent: ApiOrderData[];
-  pageNo: number;
-  pageSize: number;
-  totalElements: number;
-  totalPages: number;
-}
-
 export type GetAdminOrdersResponse = ApiResponse<OrderPageData>;
+
+// Added: Query parameters for order list
+export interface OrderQueryParams {
+  pageNo?: number;
+  pageSize?: number;
+  sortBy?: string;
+  sortDir?: "ASC" | "DESC";
+  // Optional: status parameter if backend supports it in the future
+  status?: string; 
+}
