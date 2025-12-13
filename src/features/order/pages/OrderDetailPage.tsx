@@ -35,11 +35,11 @@ const OrderDetailPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [order, setOrder] = useState<ApiOrderData | null>(null);
   const navigate = useNavigate();
+  
+  // Get latest update from context
   const { latestOrderUpdate } = useNotification();
 
   const [reviewingItem, setReviewingItem] = useState<ApiOrderItem | null>(null);
-
-  
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -56,7 +56,6 @@ const OrderDetailPage = () => {
   const handleCloseSnackbar = () => {
     setSnackbar(null);
   };
-  
 
   const fetchOrderDetails = useCallback(async () => {
     if (!orderId) {
@@ -65,6 +64,7 @@ const OrderDetailPage = () => {
       return;
     }
     
+    // Only show loading if we don't have data yet (initial load)
     if (!order) setLoading(true);
 
     setError(null);
@@ -82,14 +82,13 @@ const OrderDetailPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [orderId, order]);
+  }, [orderId]); // Remove 'order' from dependency to prevent loop
 
+  // Initial fetch
   useEffect(() => {
     fetchOrderDetails();
-    
-  }, []);
+  }, [fetchOrderDetails]);
 
-  
   const shouldUpdateStatus = (
     currentStatus: ApiOrderStatus,
     newStatus: ApiOrderStatus
@@ -102,61 +101,53 @@ const OrderDetailPage = () => {
     const isPrevFinal = finalStatuses.includes(currentStatus);
     const isNewFinal = finalStatuses.includes(newStatus);
 
-    
     if (isPrevFinal && !isNewFinal) {
       return false;
     }
     return true;
   };
 
-  
   const handleOrderUpdate = useCallback(
     (newOrderData?: ApiOrderData) => {
       if (newOrderData) {
         setOrder((prevOrder) => {
+          // If we don't have previous order data yet, accept the new one
           if (!prevOrder) return newOrderData;
 
-          if (
-            !shouldUpdateStatus(prevOrder.orderStatus, newOrderData.orderStatus)
-          ) {
+          // Prevent unnecessary updates if status is same
+          if (prevOrder.orderStatus === newOrderData.orderStatus) {
+            return prevOrder;
+          }
+
+          // Check valid transition
+          if (!shouldUpdateStatus(prevOrder.orderStatus, newOrderData.orderStatus)) {
             console.log(
-              `[Order Update Skipped] Kept final status '${prevOrder.orderStatus}' vs incoming '${newOrderData.orderStatus}'`
+              `[Order Update Skipped] Invalid transition from ${prevOrder.orderStatus} to ${newOrderData.orderStatus}`
             );
             return prevOrder;
           }
+          
+          handleShowSnackbar(`Order status updated: ${newOrderData.orderStatus}`, "info");
           return newOrderData;
         });
       } else {
         fetchOrderDetails();
       }
     },
-    [fetchOrderDetails]
+    [fetchOrderDetails, handleShowSnackbar]
   );
 
-  
+  // Real-time Update Effect
   useEffect(() => {
-    if (
-      latestOrderUpdate &&
-      order &&
-      latestOrderUpdate.orderId === order.orderId
-    ) {
-      
-      if (latestOrderUpdate.orderStatus !== order.orderStatus) {
-        
-        if (
-          shouldUpdateStatus(order.orderStatus, latestOrderUpdate.orderStatus)
-        ) {
-          handleOrderUpdate(latestOrderUpdate);
-          handleShowSnackbar(
-            `Order status updated: ${latestOrderUpdate.orderStatus}`,
-            "info"
-          );
-        } else {
-          console.warn("Ignored stale/invalid status update from WebSocket");
-        }
+    if (latestOrderUpdate && order) {
+      // Check if the update is for the current order
+      // Ensure we match strings properly
+      if (latestOrderUpdate.orderId === order.orderId) {
+        console.log("Received update for current order:", latestOrderUpdate);
+        handleOrderUpdate(latestOrderUpdate);
       }
     }
-  }, [latestOrderUpdate, order, handleOrderUpdate, handleShowSnackbar]);
+  }, [latestOrderUpdate, handleOrderUpdate]); // Removed 'order' dependency to avoid race conditions
 
   const handleOpenReview = (item: ApiOrderItem) => setReviewingItem(item);
   const handleCloseReview = () => setReviewingItem(null);

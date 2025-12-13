@@ -287,7 +287,7 @@ const OrderHistory = () => {
     fetchOrders();
   }, [fetchOrders]);
 
-  // --- Real-time Update Logic ---
+  // --- Real-time Update Logic (Updated for Event Types) ---
   useEffect(() => {
     if (latestOrderUpdate && latestOrderEventType) {
       if (latestOrderEventType === "BUYER_ORDER_UPDATE") {

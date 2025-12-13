@@ -367,20 +367,6 @@ const SellerOrderManagementPage = () => {
           severity: "error", // Màu đỏ cảnh báo
         });
       }
-      // Fallback: Logic cũ nếu cần update khác (ít dùng cho Seller trừ khi có hệ thống khác update)
-      else {
-         setRows((prevRows) => {
-          const orderIndex = prevRows.findIndex(
-            (o) => o.orderId === latestOrderUpdate.orderId
-          );
-          if (orderIndex > -1) {
-             const updated = [...prevRows];
-             updated[orderIndex] = latestOrderUpdate;
-             return updated;
-          }
-          return prevRows;
-         });
-      }
     }
   }, [latestOrderUpdate, latestOrderEventType]);
   // ----------------------

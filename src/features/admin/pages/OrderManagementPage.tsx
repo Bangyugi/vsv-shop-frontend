@@ -35,11 +35,10 @@ import {
   Search,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import * as sellerService from "../../../services/sellerService";
+import * as adminService from "../../../services/adminService";
 import type { ApiOrderData, ApiOrderStatus } from "../../../types/order";
 import { format } from "date-fns";
 import { useNotification } from "../../../contexts/NotificationContext";
-
 
 const getStatusChipProps = (
   status: ApiOrderStatus
@@ -95,7 +94,7 @@ const getStatusChipProps = (
   return statusMap[status] || statusMap["PENDING"];
 };
 
-const getNextSellerStatusActions = (currentStatus: ApiOrderStatus) => {
+const getNextStatusActions = (currentStatus: ApiOrderStatus) => {
   const actions: { label: string; status: ApiOrderStatus }[] = [];
 
   switch (currentStatus) {
@@ -105,12 +104,19 @@ const getNextSellerStatusActions = (currentStatus: ApiOrderStatus) => {
       break;
     case "CONFIRMED":
       actions.push({ label: "Start Processing", status: "PROCESSING" });
+      actions.push({ label: "Cancel Order", status: "CANCELLED" });
       break;
     case "PROCESSING":
       actions.push({ label: "Mark as Shipped", status: "SHIPPED" });
+      actions.push({ label: "Cancel Order", status: "CANCELLED" });
       break;
     case "SHIPPED":
+      actions.push({ label: "Mark as Delivered", status: "DELIVERED" });
+      actions.push({ label: "Return/Refund", status: "RETURNED" });
+      break;
     case "DELIVERED":
+      actions.push({ label: "Return/Refund", status: "RETURNED" });
+      break;
     case "CANCELLED":
     case "RETURNED":
       break;
@@ -124,7 +130,7 @@ const ActionButtonsCell: React.FC<
   }
 > = ({ row, onStatusUpdate }) => {
   const navigate = useNavigate();
-  const nextStatusActions = getNextSellerStatusActions(row.orderStatus);
+  const nextStatusActions = getNextStatusActions(row.orderStatus);
 
   const handleStatusChange = (event: SelectChangeEvent<ApiOrderStatus>) => {
     const newStatus = event.target.value as ApiOrderStatus;
@@ -133,12 +139,9 @@ const ActionButtonsCell: React.FC<
     }
   };
 
-  const isFinalStatus = [
-    "SHIPPED",
-    "DELIVERED",
-    "CANCELLED",
-    "RETURNED",
-  ].includes(row.orderStatus);
+  const isFinalStatus = ["CANCELLED", "DELIVERED", "RETURNED"].includes(
+    row.orderStatus
+  );
   const isStatusUpdatable = nextStatusActions.length > 0;
 
   return (
@@ -147,6 +150,12 @@ const ActionButtonsCell: React.FC<
         <IconButton
           size="small"
           onClick={() => navigate(`/profile/orders/${row.orderId}`)}
+          sx={{
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: "8px",
+            "&:hover": { borderColor: "primary.main" },
+          }}
         >
           <VisibilityOutlined fontSize="small" color="primary" />
         </IconButton>
@@ -160,12 +169,17 @@ const ActionButtonsCell: React.FC<
           disabled={isFinalStatus || !isStatusUpdatable}
           sx={{
             borderRadius: "8px",
-            ".MuiSelect-select": { p: 0.8 },
+            ".MuiSelect-select": {
+              p: 0.8,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            },
           }}
           renderValue={() => (
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
               <CheckCircleOutline fontSize="small" color="primary" />
-              <Typography variant="body2">Update</Typography>
+              <Typography variant="body2">Update Status</Typography>
             </Box>
           )}
         >
@@ -173,11 +187,41 @@ const ActionButtonsCell: React.FC<
             Current: {getStatusChipProps(row.orderStatus).label}
           </MenuItem>
           <Divider />
-          {nextStatusActions.map((action) => (
-            <MenuItem key={action.status} value={action.status}>
-              {action.label}
-            </MenuItem>
-          ))}
+
+          {nextStatusActions.map((action) => {
+            let Icon = CheckCircleOutline;
+            let color: "primary" | "error" | "warning" | "success" | "info" =
+              "primary";
+
+            if (action.status === "CANCELLED") {
+              Icon = CancelOutlined;
+              color = "error";
+            } else if (action.status === "RETURNED") {
+              Icon = ReplayOutlined;
+              color = "warning";
+            } else if (action.status === "DELIVERED") {
+              Icon = CheckCircleOutline;
+              color = "success";
+            } else if (action.status === "SHIPPED") {
+              Icon = LocalShippingOutlined;
+              color = "info";
+            } else if (
+              action.status === "PROCESSING" ||
+              action.status === "CONFIRMED"
+            ) {
+              Icon = FactCheckOutlined;
+              color = "info";
+            } else {
+              color = "primary";
+            }
+
+            return (
+              <MenuItem key={action.status} value={action.status}>
+                <Icon color={color} fontSize="small" sx={{ mr: 1 }} />
+                {action.label}
+              </MenuItem>
+            );
+          })}
         </Select>
       </FormControl>
     </Box>
@@ -205,6 +249,10 @@ const statusFilters: { value: StatusFilter; label: string }[] = [
 const sortOptions = [
   { value: "orderDate_desc", label: "Date: Mới nhất" },
   { value: "orderDate_asc", label: "Date: Cũ nhất" },
+  { value: "totalPrice_desc", label: "Total: Cao đến Thấp" },
+  { value: "totalPrice_asc", label: "Total: Thấp đến Cao" },
+  { value: "id_asc", label: "ID: Tăng dần" },
+  { value: "id_desc", label: "ID: Giảm dần" },
 ];
 
 interface CustomToolbarProps {
@@ -215,65 +263,73 @@ interface CustomToolbarProps {
   statusFilter: StatusFilter;
   onStatusFilterChange: (event: SelectChangeEvent) => void;
 }
-const CustomToolbar: React.FC<CustomToolbarProps> = (props) => (
-  <Box
-    sx={{
-      p: 2,
-      display: "flex",
-      justifyContent: "space-between",
-      gap: 2,
-      flexWrap: "wrap",
-      borderBottom: "1px solid",
-      borderColor: "divider",
-    }}
-  >
-    <TextField
-      variant="outlined"
-      size="small"
-      placeholder="Tìm kiếm order (ID, Customer...)"
-      value={props.searchTerm}
-      onChange={props.onSearchChange}
-      InputProps={{
-        startAdornment: (
-          <InputAdornment position="start">
-            <Search />
-          </InputAdornment>
-        ),
+
+const CustomToolbar: React.FC<CustomToolbarProps> = ({
+  searchTerm,
+  onSearchChange,
+  sortBy,
+  onSortChange,
+  statusFilter,
+  onStatusFilterChange,
+}) => {
+  return (
+    <Box
+      sx={{
+        p: 2,
+        display: "flex",
+        justifyContent: "space-between",
+        gap: 2,
+        flexWrap: "wrap",
+        borderBottom: "1px solid",
+        borderColor: "divider",
       }}
-      sx={{ width: { xs: "100%", sm: 300 } }}
-    />
-    <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-      <FormControl size="small" sx={{ minWidth: 150 }}>
-        <InputLabel>Status</InputLabel>
-        <Select
-          value={props.statusFilter}
-          label="Status"
-          onChange={props.onStatusFilterChange}
-        >
-          {statusFilters.map((opt) => (
-            <MenuItem key={opt.value} value={opt.value}>
-              {opt.label}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-      <FormControl size="small" sx={{ minWidth: 200 }}>
-        <InputLabel>Sắp xếp theo</InputLabel>
-        <Select
-          value={props.sortBy}
-          label="Sắp xếp theo"
-          onChange={props.onSortChange}
-        >
-          {sortOptions.map((opt) => (
-            <MenuItem key={opt.value} value={opt.value}>
-              {opt.label}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+    >
+      <TextField
+        variant="outlined"
+        size="small"
+        placeholder="Tìm kiếm order (ID, Customer, Seller...)"
+        value={searchTerm}
+        onChange={onSearchChange}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Search />
+            </InputAdornment>
+          ),
+        }}
+        sx={{
+          width: { xs: "100%", sm: 300 },
+        }}
+      />
+      <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>Status</InputLabel>
+          <Select
+            value={statusFilter}
+            label="Status"
+            onChange={onStatusFilterChange}
+          >
+            {statusFilters.map((opt) => (
+              <MenuItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ minWidth: 200 }}>
+          <InputLabel>Sắp xếp theo</InputLabel>
+          <Select value={sortBy} label="Sắp xếp theo" onChange={onSortChange}>
+            {sortOptions.map((opt) => (
+              <MenuItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
     </Box>
-  </Box>
-);
+  );
+};
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat("en-US", {
@@ -282,7 +338,7 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-const SellerOrderManagementPage = () => {
+const OrderManagementPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rows, setRows] = useState<ApiOrderData[]>([]);
@@ -295,23 +351,23 @@ const SellerOrderManagementPage = () => {
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
-    severity: "success" | "error" | "info";
+    severity: "success" | "error" | "info" | "warning";
   } | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("orderDate_desc");
 
-  const { latestOrderUpdate } = useNotification();
+  // [Added] Use Notification Hook
+  const { latestOrderUpdate, latestOrderEventType } = useNotification();
 
   const fetchOrders = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await sellerService.getMySellOrders(
+      const response = await adminService.getAdminOrders(
         paginationModel.page + 1,
         paginationModel.pageSize,
-        statusFilter,
-        searchTerm
+        statusFilter
       );
       if (response.code === 200 && response.data) {
         setRows(response.data.pageContent);
@@ -335,66 +391,104 @@ const SellerOrderManagementPage = () => {
   ]);
 
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      fetchOrders();
-    }, 500);
-    return () => clearTimeout(delayDebounceFn);
-  }, [fetchOrders]);
+    if (paginationModel.page !== 0) {
+      setPaginationModel((prev) => ({ ...prev, page: 0 }));
+    } else {
+      const delayDebounceFn = setTimeout(() => {
+        fetchOrders();
+      }, 500);
 
-  
+      return () => clearTimeout(delayDebounceFn);
+    }
+  }, [
+    searchTerm,
+    sortBy,
+    statusFilter,
+    paginationModel.page,
+    paginationModel.pageSize,
+  ]);
+
+  // [UPDATED] Real-time logic for Admin
   useEffect(() => {
-    if (latestOrderUpdate) {
+    if (latestOrderUpdate && latestOrderEventType) {
+      console.log(
+        "Admin Realtime Update:",
+        latestOrderEventType,
+        latestOrderUpdate
+      );
+
+      // 1. Update Data Grid State safely (avoid race conditions)
       setRows((prevRows) => {
-        const orderIndex = prevRows.findIndex(
+        const orderExists = prevRows.some(
           (o) => o.orderId === latestOrderUpdate.orderId
         );
 
-        if (orderIndex > -1) {
-          
-          const updatedRows = [...prevRows];
-          updatedRows[orderIndex] = {
-            ...updatedRows[orderIndex],
-            ...latestOrderUpdate,
-          };
-
-          setSnackbar({
-            open: true,
-            message: `Order #${latestOrderUpdate.orderId} updated: ${latestOrderUpdate.orderStatus}`,
-            severity: "info",
-          });
-          return updatedRows;
+        if (orderExists) {
+          // If order exists, update it regardless of status
+          return prevRows.map((row) =>
+            row.orderId === latestOrderUpdate.orderId ? latestOrderUpdate : row
+          );
         } else {
-          
-          
-          
-          setSnackbar({
-            open: true,
-            message: `New Order Received #${latestOrderUpdate.orderId}`,
-            severity: "success",
-          });
-          return [latestOrderUpdate, ...prevRows];
+          // If order doesn't exist, only add if it's a NEW order event
+          if (latestOrderEventType === "ADMIN_NEW_ORDER") {
+            return [latestOrderUpdate, ...prevRows];
+          }
+          return prevRows;
         }
       });
+
+      // 2. Show Snackbar Notification
+      let message = `Order #${latestOrderUpdate.orderId} updated`;
+      let severity: "info" | "success" | "error" | "warning" = "info";
+
+      switch (latestOrderEventType) {
+        case "ADMIN_NEW_ORDER":
+          message = `New System Order: #${latestOrderUpdate.orderId}`;
+          severity = "success";
+          break;
+        case "ADMIN_ORDER_CANCELLED":
+          message = `Order #${latestOrderUpdate.orderId} was cancelled`;
+          severity = "error";
+          break;
+        case "ADMIN_ORDER_UPDATE":
+          message = `Order #${latestOrderUpdate.orderId} status changed to ${latestOrderUpdate.orderStatus}`;
+          if (latestOrderUpdate.orderStatus === "DELIVERED") {
+            severity = "success";
+          } else if (latestOrderUpdate.orderStatus === "RETURNED") {
+            severity = "warning";
+          } else {
+            severity = "info";
+          }
+          break;
+        default:
+          break;
+      }
+
+      setSnackbar({
+        open: true,
+        message: message,
+        severity: severity,
+      });
     }
-  }, [latestOrderUpdate]);
-  
+  }, [latestOrderUpdate, latestOrderEventType]);
 
   const handleActionUpdateStatus = useCallback(
     async (orderId: string, newStatus: ApiOrderStatus) => {
       try {
-        const response = await sellerService.updateSellOrderStatus(
+        const response = await adminService.updateAdminOrderStatus(
           orderId,
           newStatus
         );
+
         if (response.code === 200) {
           setSnackbar({
             open: true,
-            message: `Order status updated to ${newStatus}`,
+            message: `Order #${
+              orderId.split("-")[0]
+            } status updated to ${newStatus}`,
             severity: "success",
           });
-          
-          
-          
+          fetchOrders();
         } else {
           throw new Error(response.message);
         }
@@ -409,15 +503,17 @@ const SellerOrderManagementPage = () => {
         });
       }
     },
-    [] 
+    [fetchOrders]
   );
 
-  const handleCloseSnackbar = () => setSnackbar(null);
+  const handleCloseSnackbar = () => {
+    setSnackbar(null);
+  };
 
   const columns: GridColDef[] = [
     {
       field: "orderId",
-      headerName: "Order ID",
+      headerName: "Order ID (UUID)",
       width: 300,
     },
     {
@@ -429,6 +525,8 @@ const SellerOrderManagementPage = () => {
       valueFormatter: (value: Date | null) =>
         value ? format(value, "dd/MM/yyyy") : "N/A",
       type: "date",
+      align: "center",
+      headerAlign: "center",
     },
     {
       field: "customer",
@@ -438,25 +536,41 @@ const SellerOrderManagementPage = () => {
         `${row.user?.firstName || ""} ${row.user?.lastName || ""}`,
     },
     {
+      field: "customerPhone",
+      headerName: "Phone",
+      width: 130,
+      valueGetter: (_value: any, row: ApiOrderData) => row.user?.phone || "N/A",
+      align: "center",
+      headerAlign: "center",
+    },
+
+    {
       field: "totalPrice",
-      headerName: "My Items Total",
-      width: 120,
+      headerName: "Total",
+      width: 100,
       type: "number",
       valueFormatter: (value: number) => formatCurrency(value || 0),
     },
     {
       field: "totalItem",
-      headerName: "My Items",
+      headerName: "Items",
       width: 80,
       type: "number",
       align: "center",
+      headerAlign: "center",
     },
     {
       field: "orderStatus",
       headerName: "Status",
       width: 150,
+      type: "singleSelect",
+      valueOptions: allStatuses,
+      align: "center",
+      headerAlign: "center",
       renderCell: (params: GridRenderCellParams<any, ApiOrderStatus>) => {
-        const props = getStatusChipProps(params.value || "PENDING");
+        const props = getStatusChipProps(
+          (params.value as ApiOrderStatus) || "PENDING"
+        );
         return <Chip {...props} size="small" variant="outlined" />;
       },
     },
@@ -464,8 +578,10 @@ const SellerOrderManagementPage = () => {
       field: "customActions",
       headerName: "Actions",
       sortable: false,
-      width: 200,
+      filterable: false,
+      width: 250,
       align: "center",
+      headerAlign: "center",
       renderCell: (params: GridRenderCellParams<ApiOrderData>) => (
         <ActionButtonsCell
           {...params}
@@ -483,7 +599,7 @@ const SellerOrderManagementPage = () => {
         className="font-bold"
         sx={{ mb: 4 }}
       >
-        My Orders
+        Order Management
       </Typography>
 
       {error && (
@@ -539,6 +655,7 @@ const SellerOrderManagementPage = () => {
               alignItems: "center",
               py: 2,
             },
+
             "& .MuiDataGrid-cell[data-field='totalItem']": {
               justifyContent: "center",
             },
@@ -549,6 +666,9 @@ const SellerOrderManagementPage = () => {
               justifyContent: "center",
             },
             "& .MuiDataGrid-cell[data-field='orderDate']": {
+              justifyContent: "center",
+            },
+            "& .MuiDataGrid-cell[data-field='customerPhone']": {
               justifyContent: "center",
             },
             "& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within": {
@@ -571,7 +691,7 @@ const SellerOrderManagementPage = () => {
         {snackbar ? (
           <Alert
             onClose={handleCloseSnackbar}
-            severity={snackbar.severity}
+            severity={snackbar.severity || "info"}
             variant="filled"
             sx={{ width: "100%" }}
           >
@@ -583,4 +703,4 @@ const SellerOrderManagementPage = () => {
   );
 };
 
-export default SellerOrderManagementPage;
+export default OrderManagementPage;

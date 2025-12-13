@@ -53,7 +53,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
-  // Xử lý khi nhận được update đơn hàng (Theo cấu trúc wrapper mới)
+  // Xử lý khi nhận được update đơn hàng (Payload là ApiOrderData)
   const handleOrderUpdate = useCallback((message: IMessage) => {
     try {
       const response: WebSocketOrderResponse = JSON.parse(message.body);
@@ -76,28 +76,30 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
       connectHeaders: {
         Authorization: `Bearer ${accessToken}`,
       },
-      debug: (str) => {
-        // console.log(str); // Uncomment for debug
-      },
+      // debug: (str) => console.log(str), // Uncomment for debug
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
     });
 
-    client.onConnect = (frame) => {
+   client.onConnect = (frame) => {
       console.log("Connected to WebSocket");
       setIsConnected(true);
 
-      // 1. Subscribe Notifications (Thông báo chung)
+      // 1. Subscribe Notifications (General notifications)
       client.subscribe("/user/queue/notifications", handleNewNotification);
 
-      // 2. Subscribe Order Updates (Real-time updates cho Buyer/Seller)
-      // FIX: Đổi channel từ /order-updates thành /updates theo tài liệu
+      // 2. Subscribe Order Updates (Private updates for Buyer/Seller)
       client.subscribe("/user/queue/updates", handleOrderUpdate);
 
       const isAdmin = user.roles.some((r) => r.name === "ROLE_ADMIN");
       if (isAdmin) {
+        // 3. Subscribe Admin Global Notifications (Text)
         client.subscribe("/topic/admin/notifications", handleNewNotification);
+
+        // 4. [CORRECTED] Subscribe Admin Global Order Updates (Data)
+        // Ensure this matches the backend destination in OrderServiceImpl.java
+        client.subscribe("/topic/admin/orders", handleOrderUpdate); 
       }
     };
 

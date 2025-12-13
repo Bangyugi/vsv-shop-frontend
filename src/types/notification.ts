@@ -18,9 +18,15 @@ export type GetNotificationSummaryResponse =
 
 // --- WebSocket Types ---
 export type WebSocketEventType =
+  // Seller Events
   | "SELLER_NEW_ORDER"
   | "SELLER_ORDER_CANCELLED"
-  | "BUYER_ORDER_UPDATE";
+  // Buyer Events
+  | "BUYER_ORDER_UPDATE"
+  // Admin Events (Global)
+  | "ADMIN_NEW_ORDER"
+  | "ADMIN_ORDER_CANCELLED"
+  | "ADMIN_ORDER_UPDATE";
 
 export interface WebSocketOrderResponse {
   type: WebSocketEventType;
