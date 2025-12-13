@@ -108,6 +108,16 @@ const Navbar = () => {
     }
   }, [categories]);
 
+  // --- Tối ưu: Cleanup timeout khi unmount ---
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+  // ------------------------------------------
+
   const handleMenu = (event: React.MouseEvent<HTMLElement>) =>
     setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);

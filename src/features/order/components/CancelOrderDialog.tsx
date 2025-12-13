@@ -7,6 +7,7 @@ import {
   DialogContentText,
   DialogActions,
   TextField,
+  Box,
 } from "@mui/material";
 
 interface CancelOrderDialogProps {
@@ -22,39 +23,45 @@ const CancelOrderDialog = ({
 }: CancelOrderDialogProps) => {
   const [reason, setReason] = useState("");
 
-  const handleSubmit = () => {
+  const handleSubmit = (e: React.FormEvent) => {
+    
+    e.preventDefault();
+
     onSubmit(reason);
     setReason("");
   };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle fontWeight="bold">Confirm Order Cancellation</DialogTitle>
-      <DialogContent>
-        <DialogContentText sx={{ mb: 2 }}>
-          Are you sure you want to cancel this order? Please provide a reason
-          (optional).
-        </DialogContentText>
-        <TextField
-          autoFocus
-          margin="dense"
-          id="reason"
-          label="Reason for cancellation"
-          type="text"
-          fullWidth
-          variant="outlined"
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-        />
-      </DialogContent>
-      <DialogActions sx={{ p: 3, pt: 0 }}>
-        <Button onClick={onClose} color="inherit">
-          No
-        </Button>
-        <Button onClick={handleSubmit} variant="contained" color="error">
-          Confirm Cancellation
-        </Button>
-      </DialogActions>
+      {/* Bọc nội dung trong form để xử lý sự kiện submit chuẩn */}
+      <Box component="form" onSubmit={handleSubmit}>
+        <DialogTitle fontWeight="bold">Confirm Order Cancellation</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2 }}>
+            Are you sure you want to cancel this order? Please provide a reason
+            (optional).
+          </DialogContentText>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="reason"
+            label="Reason for cancellation"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 3, pt: 0 }}>
+          <Button onClick={onClose} color="inherit" type="button">
+            No
+          </Button>
+          <Button type="submit" variant="contained" color="error">
+            Confirm Cancellation
+          </Button>
+        </DialogActions>
+      </Box>
     </Dialog>
   );
 };

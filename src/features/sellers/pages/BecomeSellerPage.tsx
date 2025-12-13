@@ -6,7 +6,7 @@ import {
   CircularProgress,
   Button,
 } from "@mui/material";
-import { useNavigate, Link as RouterLink } from "react-router-dom";
+import { useNavigate, Link as RouterLink, useLocation } from "react-router-dom"; // <-- Thêm useLocation
 import { useAuth } from "../../../contexts/AuthContext";
 import SellerRegistrationForm from "../components/SellerRegistrasionForm";
 import {
@@ -19,6 +19,7 @@ import { motion } from "framer-motion";
 const BecomeSellerPage = () => {
   const { user, isAuthenticated, isLoading, refreshUserProfile } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation(); // <-- Khai báo location
   const [isSuccess, setIsSuccess] = useState(false);
 
   if (isLoading) {
@@ -30,11 +31,12 @@ const BecomeSellerPage = () => {
   }
 
   if (!isAuthenticated || !user) {
+    // Sử dụng location đã khai báo
     navigate("/login", { state: { from: location } });
     return null;
   }
-  // Check if user is already a seller or admin
 
+  // Check if user is already a seller or admin
   const isSeller = user.roles.some((role) => role.name === "ROLE_SELLER");
   const isAdmin = user.roles.some((role) => role.name === "ROLE_ADMIN");
 
@@ -121,7 +123,6 @@ const BecomeSellerPage = () => {
               textAlign: "center",
             }}
           >
-            {/* CẬP NHẬT: Thay đổi icon và thông báo thành 'Pending' */}
             <HourglassEmptyOutlined
               sx={{ fontSize: "5rem", color: "warning.main", mb: 2 }}
             />

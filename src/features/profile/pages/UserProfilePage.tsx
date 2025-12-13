@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { AnimatePresence, motion } from "framer-motion";
-import { useSearchParams, Navigate } from "react-router-dom";
+import { useSearchParams, Navigate, useLocation } from "react-router-dom"; // <-- Thêm useLocation
 import { useAuth } from "../../../contexts/AuthContext";
 
 import ProfileSidebar from "../components/ProfileSidebar";
@@ -38,6 +38,7 @@ const UserProfilePage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { user, isAuthenticated, isLoading } = useAuth();
+  const location = useLocation(); // <-- Khai báo location
 
   const getActiveTabFromUrl = (): ProfileTab => {
     const tabFromUrl = searchParams.get("tab") as ProfileTab;

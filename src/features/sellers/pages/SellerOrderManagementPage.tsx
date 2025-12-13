@@ -38,6 +38,7 @@ import { useNavigate } from "react-router-dom";
 import * as sellerService from "../../../services/sellerService";
 import type { ApiOrderData, ApiOrderStatus } from "../../../types/order";
 import { format } from "date-fns";
+import { useNotification } from "../../../contexts/NotificationContext";
 
 // Get chip properties based on order status
 const getStatusChipProps = (
@@ -294,11 +295,14 @@ const SellerOrderManagementPage = () => {
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
-    severity: "success" | "error";
+    severity: "success" | "error" | "info";
   } | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("orderDate_desc");
+
+  // Destructure cả eventType
+  const { latestOrderUpdate, latestOrderEventType } = useNotification();
 
   const fetchOrders = useCallback(async () => {
     setIsLoading(true);
@@ -338,6 +342,49 @@ const SellerOrderManagementPage = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [fetchOrders]);
 
+  // --- Real-time Logic (Updated for Event Types) ---
+  useEffect(() => {
+    if (latestOrderUpdate && latestOrderEventType) {
+      // Logic 1: Đơn hàng mới -> Thêm vào đầu + Thông báo
+      if (latestOrderEventType === "SELLER_NEW_ORDER") {
+        setRows((prevRows) => [latestOrderUpdate, ...prevRows]);
+        setSnackbar({
+          open: true,
+          message: `New Order Received #${latestOrderUpdate.orderId}`,
+          severity: "success",
+        });
+      }
+      // Logic 2: Khách hủy đơn -> Update status + Thông báo
+      else if (latestOrderEventType === "SELLER_ORDER_CANCELLED") {
+        setRows((prevRows) =>
+          prevRows.map((row) =>
+            row.orderId === latestOrderUpdate.orderId ? latestOrderUpdate : row
+          )
+        );
+        setSnackbar({
+          open: true,
+          message: `Order #${latestOrderUpdate.orderId} was cancelled by buyer`,
+          severity: "error", // Màu đỏ cảnh báo
+        });
+      }
+      // Fallback: Logic cũ nếu cần update khác (ít dùng cho Seller trừ khi có hệ thống khác update)
+      else {
+         setRows((prevRows) => {
+          const orderIndex = prevRows.findIndex(
+            (o) => o.orderId === latestOrderUpdate.orderId
+          );
+          if (orderIndex > -1) {
+             const updated = [...prevRows];
+             updated[orderIndex] = latestOrderUpdate;
+             return updated;
+          }
+          return prevRows;
+         });
+      }
+    }
+  }, [latestOrderUpdate, latestOrderEventType]);
+  // ----------------------
+
   const handleActionUpdateStatus = useCallback(
     async (orderId: string, newStatus: ApiOrderStatus) => {
       try {
@@ -351,6 +398,7 @@ const SellerOrderManagementPage = () => {
             message: `Order status updated to ${newStatus}`,
             severity: "success",
           });
+          // Optimistic update hoặc fetch lại
           fetchOrders();
         } else {
           throw new Error(response.message);

@@ -25,6 +25,7 @@ import type {
   ApiOrderItem,
 } from "../../../types/order";
 import ReviewDialog from "../../order/components/ReviewDialog";
+import { useNotification } from "../../../contexts/NotificationContext";
 
 const mapApiStatusToTab = (apiStatus: ApiOrderStatus): OrderStatusTab => {
   switch (apiStatus) {
@@ -208,6 +209,7 @@ const ITEMS_PER_PAGE = 3;
 
 const OrderHistory = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { latestOrderUpdate, latestOrderEventType } = useNotification();
 
   const [allOrders, setAllOrders] = useState<ApiOrderData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -217,7 +219,7 @@ const OrderHistory = () => {
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
-    severity: "success" | "error";
+    severity: "success" | "error" | "info";
   } | null>(null);
 
   const fetchOrders = useCallback(async () => {
@@ -244,6 +246,37 @@ const OrderHistory = () => {
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
+
+  // --- Real-time Update Logic (Updated) ---
+  useEffect(() => {
+    if (latestOrderUpdate && latestOrderEventType) {
+      // Chỉ lắng nghe sự kiện dành cho Buyer
+      if (latestOrderEventType === "BUYER_ORDER_UPDATE") {
+        setAllOrders((prevOrders) => {
+          const orderIndex = prevOrders.findIndex(
+            (o) => o.orderId === latestOrderUpdate.orderId
+          );
+
+          if (orderIndex > -1) {
+            // Update existing order status
+            const updatedOrders = [...prevOrders];
+            updatedOrders[orderIndex] = latestOrderUpdate;
+            setSnackbar({
+              open: true,
+              message: `Order #${latestOrderUpdate.orderId} updated: ${latestOrderUpdate.orderStatus}`,
+              severity: "info",
+            });
+            return updatedOrders;
+          }
+          // Trường hợp hiếm: Buyer nhận update nhưng chưa có trong list (có thể do phân trang hoặc lỗi sync)
+          // Tạm thời không tự thêm vào nếu không thấy (để tránh lỗi data), hoặc fetch lại list
+          return prevOrders;
+        });
+      }
+      // Lưu ý: Buyer cũng có thể nhận sự kiện khác nếu backend gửi nhầm, nhưng logic UI chỉ nên phản ứng với BUYER_ORDER_UPDATE
+    }
+  }, [latestOrderUpdate, latestOrderEventType]);
+  // -----------------------------
 
   const getActiveTabFromUrl = (): OrderStatusTab => {
     const statusFromUrl = searchParams.get("status") as OrderStatusTab;

@@ -1,94 +1,119 @@
 import React, {
   createContext,
-  useState,
   useContext,
+  useState,
   useCallback,
-  useEffect,
+  type ReactNode,
   useMemo,
 } from "react";
-import * as sellerService from "../services/sellerService";
-import type {
-  ApiNotificationSummary,
-  SellerNotificationContextType,
-} from "../types/notification";
-import { useAuth } from "./AuthContext";
+import { Snackbar, Alert, type AlertColor } from "@mui/material";
 
-const POLLING_INTERVAL_MS = 30000;
+// --- Types ---
+interface NotificationState {
+  open: boolean;
+  message: string;
+  severity: AlertColor; // 'success' | 'info' | 'warning' | 'error'
+  duration?: number;
+}
 
+interface SellerNotificationContextType {
+  showNotification: (
+    message: string,
+    severity?: AlertColor,
+    duration?: number
+  ) => void;
+  hideNotification: () => void;
+}
+
+// --- Context Creation ---
 const SellerNotificationContext = createContext<
   SellerNotificationContextType | undefined
 >(undefined);
 
-export const SellerNotificationProvider: React.FC<{
-  children: React.ReactNode;
-}> = ({ children }) => {
-  const [summary, setSummary] = useState<ApiNotificationSummary | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const { isAuthenticated, user } = useAuth();
+// --- Provider Component ---
+interface SellerNotificationProviderProps {
+  children: ReactNode;
+}
 
-  const isSeller =
-    user?.roles.some(
-      (role) =>
-        role.name === "ROLE_SELLER" ||
-        role.name === "ROLE_ADMIN" ||
-        role.name === "ROLE_SUPERADMIN"
-    ) || false;
+export const SellerNotificationProvider: React.FC<
+  SellerNotificationProviderProps
+> = ({ children }) => {
+  const [notification, setNotification] = useState<NotificationState>({
+    open: false,
+    message: "",
+    severity: "info",
+    duration: 3000,
+  });
 
-  const fetchSummary = useCallback(async () => {
-    if (!isAuthenticated || !isSeller) {
-      setSummary(null);
-      return;
-    }
+  // Sử dụng useCallback để tránh tạo lại function gây re-render các component con
+  const showNotification = useCallback(
+    (
+      message: string,
+      severity: AlertColor = "info",
+      duration: number = 3000
+    ) => {
+      setNotification({
+        open: true,
+        message,
+        severity,
+        duration,
+      });
+    },
+    []
+  );
 
-    try {
-      const response = await sellerService.getNotificationSummary();
-      if (response.code === 200 && response.data) {
-        setSummary(response.data);
-      } else {
-        setSummary(null);
-        console.error("Failed to fetch notifications:", response.message);
+  const hideNotification = useCallback(
+    (event?: React.SyntheticEvent | Event, reason?: string) => {
+      if (reason === "clickaway") {
+        return;
       }
-    } catch (error) {
-      setSummary(null);
-      console.error("Error fetching notifications:", error);
-    } finally {
-    }
-  }, [isAuthenticated, isSeller]);
+      setNotification((prev) => ({ ...prev, open: false }));
+    },
+    []
+  );
 
-  useEffect(() => {
-    if (isAuthenticated && isSeller) {
-      fetchSummary();
-
-      const intervalId = setInterval(fetchSummary, POLLING_INTERVAL_MS);
-
-      return () => clearInterval(intervalId);
-    } else {
-      setSummary(null);
-    }
-  }, [isAuthenticated, isSeller, fetchSummary]);
-
+  // useMemo để đảm bảo context value không thay đổi reference trừ khi logic thay đổi
   const contextValue = useMemo(
     () => ({
-      summary,
-      isLoading,
-      fetchSummary,
+      showNotification,
+      hideNotification,
     }),
-    [summary, isLoading, fetchSummary]
+    [showNotification, hideNotification]
   );
 
   return (
     <SellerNotificationContext.Provider value={contextValue}>
       {children}
+
+      {/* Global Snackbar UI - Đặt tại đây để không cần chèn vào từng page */}
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={notification.duration}
+        onClose={hideNotification}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }} // Vị trí thường thấy ở Dashboard
+      >
+        <Alert
+          onClose={hideNotification}
+          severity={notification.severity}
+          variant="filled" // Style nổi bật cho Seller
+          sx={{ width: "100%", boxShadow: 3 }}
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </SellerNotificationContext.Provider>
   );
 };
 
+// --- Custom Hook ---
 export const useSellerNotification = (): SellerNotificationContextType => {
   const context = useContext(SellerNotificationContext);
-  if (context === undefined) {
+
+  if (!context) {
     throw new Error(
       "useSellerNotification must be used within a SellerNotificationProvider"
     );
   }
+
   return context;
 };

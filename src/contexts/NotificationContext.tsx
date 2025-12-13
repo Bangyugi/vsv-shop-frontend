@@ -12,7 +12,10 @@ import { useAuth } from "./AuthContext";
 import {
   type NotificationMessage,
   type NotificationContextType,
+  type WebSocketOrderResponse,
+  type WebSocketEventType,
 } from "../types/notification";
+import type { ApiOrderData } from "../types/order";
 
 const NotificationContext = createContext<NotificationContextType | undefined>(
   undefined
@@ -26,21 +29,40 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const { accessToken, user, isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
+  
+  // State cho Real-time Order
+  const [latestOrderUpdate, setLatestOrderUpdate] =
+    useState<ApiOrderData | null>(null);
+  const [latestOrderEventType, setLatestOrderEventType] =
+    useState<WebSocketEventType | null>(null);
+
   const [isConnected, setIsConnected] = useState(false);
-  const [stompClient, setStompClient] = useState<Client | null>(null);
+  const [_stompClient, setStompClient] = useState<Client | null>(null);
 
   const unreadCount = useMemo(
     () => notifications.filter((n) => !n.isRead).length,
     [notifications]
   );
 
-  const handleNewMessage = useCallback((message: IMessage) => {
+  const handleNewNotification = useCallback((message: IMessage) => {
     try {
       const notification: NotificationMessage = JSON.parse(message.body);
-
       setNotifications((prev) => [notification, ...prev]);
     } catch (error) {
       console.error("Error parsing notification:", error);
+    }
+  }, []);
+
+  // Xử lý khi nhận được update đơn hàng (Theo cấu trúc wrapper mới)
+  const handleOrderUpdate = useCallback((message: IMessage) => {
+    try {
+      const response: WebSocketOrderResponse = JSON.parse(message.body);
+      console.log("Real-time order event:", response.type, response.payload);
+      
+      setLatestOrderUpdate(response.payload);
+      setLatestOrderEventType(response.type);
+    } catch (error) {
+      console.error("Error parsing order update:", error);
     }
   }, []);
 
@@ -54,7 +76,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
       connectHeaders: {
         Authorization: `Bearer ${accessToken}`,
       },
-      debug: (str) => {},
+      debug: (str) => {
+        // console.log(str); // Uncomment for debug
+      },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
@@ -64,11 +88,16 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
       console.log("Connected to WebSocket");
       setIsConnected(true);
 
-      client.subscribe("/user/queue/notifications", handleNewMessage);
+      // 1. Subscribe Notifications (Thông báo chung)
+      client.subscribe("/user/queue/notifications", handleNewNotification);
+
+      // 2. Subscribe Order Updates (Real-time updates cho Buyer/Seller)
+      // FIX: Đổi channel từ /order-updates thành /updates theo tài liệu
+      client.subscribe("/user/queue/updates", handleOrderUpdate);
 
       const isAdmin = user.roles.some((r) => r.name === "ROLE_ADMIN");
       if (isAdmin) {
-        client.subscribe("/topic/admin/notifications", handleNewMessage);
+        client.subscribe("/topic/admin/notifications", handleNewNotification);
       }
     };
 
@@ -91,7 +120,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
         client.deactivate();
       }
     };
-  }, [isAuthenticated, accessToken, user, handleNewMessage]);
+  }, [
+    isAuthenticated,
+    accessToken,
+    user,
+    handleNewNotification,
+    handleOrderUpdate,
+  ]);
 
   const markAsRead = (id: number) => {
     setNotifications((prev) =>
@@ -113,6 +148,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
         notifications,
         unreadCount,
         isConnected,
+        latestOrderUpdate,
+        latestOrderEventType,
         markAsRead,
         markAllAsRead,
         clearNotifications,

@@ -35,9 +35,11 @@ import {
   Search,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import * as adminService from "../../../services/adminService";
+import * as sellerService from "../../../services/sellerService";
 import type { ApiOrderData, ApiOrderStatus } from "../../../types/order";
 import { format } from "date-fns";
+import { useNotification } from "../../../contexts/NotificationContext";
+
 
 const getStatusChipProps = (
   status: ApiOrderStatus
@@ -93,7 +95,7 @@ const getStatusChipProps = (
   return statusMap[status] || statusMap["PENDING"];
 };
 
-const getNextStatusActions = (currentStatus: ApiOrderStatus) => {
+const getNextSellerStatusActions = (currentStatus: ApiOrderStatus) => {
   const actions: { label: string; status: ApiOrderStatus }[] = [];
 
   switch (currentStatus) {
@@ -103,19 +105,12 @@ const getNextStatusActions = (currentStatus: ApiOrderStatus) => {
       break;
     case "CONFIRMED":
       actions.push({ label: "Start Processing", status: "PROCESSING" });
-      actions.push({ label: "Cancel Order", status: "CANCELLED" });
       break;
     case "PROCESSING":
       actions.push({ label: "Mark as Shipped", status: "SHIPPED" });
-      actions.push({ label: "Cancel Order", status: "CANCELLED" });
       break;
     case "SHIPPED":
-      actions.push({ label: "Mark as Delivered", status: "DELIVERED" });
-      actions.push({ label: "Return/Refund", status: "RETURNED" });
-      break;
     case "DELIVERED":
-      actions.push({ label: "Return/Refund", status: "RETURNED" });
-      break;
     case "CANCELLED":
     case "RETURNED":
       break;
@@ -129,7 +124,7 @@ const ActionButtonsCell: React.FC<
   }
 > = ({ row, onStatusUpdate }) => {
   const navigate = useNavigate();
-  const nextStatusActions = getNextStatusActions(row.orderStatus);
+  const nextStatusActions = getNextSellerStatusActions(row.orderStatus);
 
   const handleStatusChange = (event: SelectChangeEvent<ApiOrderStatus>) => {
     const newStatus = event.target.value as ApiOrderStatus;
@@ -138,30 +133,25 @@ const ActionButtonsCell: React.FC<
     }
   };
 
-  const isFinalStatus = ["CANCELLED", "DELIVERED", "RETURNED"].includes(
-    row.orderStatus
-  );
+  const isFinalStatus = [
+    "SHIPPED",
+    "DELIVERED",
+    "CANCELLED",
+    "RETURNED",
+  ].includes(row.orderStatus);
   const isStatusUpdatable = nextStatusActions.length > 0;
 
   return (
     <Box sx={{ display: "flex", gap: 1, alignItems: "center", height: "100%" }}>
-      {/* Nút 1: View Details */}
       <Tooltip title="View Details">
         <IconButton
           size="small"
           onClick={() => navigate(`/profile/orders/${row.orderId}`)}
-          sx={{
-            border: "1px solid",
-            borderColor: "divider",
-            borderRadius: "8px",
-            "&:hover": { borderColor: "primary.main" },
-          }}
         >
           <VisibilityOutlined fontSize="small" color="primary" />
         </IconButton>
       </Tooltip>
 
-      {/* Nút 2: Update Status (Dùng Select để làm Dropdown) */}
       <FormControl size="small">
         <Select
           value={row.orderStatus}
@@ -170,60 +160,24 @@ const ActionButtonsCell: React.FC<
           disabled={isFinalStatus || !isStatusUpdatable}
           sx={{
             borderRadius: "8px",
-            ".MuiSelect-select": {
-              p: 0.8,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            },
+            ".MuiSelect-select": { p: 0.8 },
           }}
           renderValue={() => (
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
               <CheckCircleOutline fontSize="small" color="primary" />
-              <Typography variant="body2">Update Status</Typography>
+              <Typography variant="body2">Update</Typography>
             </Box>
           )}
         >
-          {/* Menu Items: Chỉ hiển thị các trạng thái tiếp theo hợp lý */}
           <MenuItem disabled value={row.orderStatus}>
             Current: {getStatusChipProps(row.orderStatus).label}
           </MenuItem>
           <Divider />
-
-          {nextStatusActions.map((action) => {
-            let Icon = CheckCircleOutline;
-            let color: "primary" | "error" | "warning" | "success" | "info" =
-              "primary";
-
-            if (action.status === "CANCELLED") {
-              Icon = CancelOutlined;
-              color = "error";
-            } else if (action.status === "RETURNED") {
-              Icon = ReplayOutlined;
-              color = "warning";
-            } else if (action.status === "DELIVERED") {
-              Icon = CheckCircleOutline;
-              color = "success";
-            } else if (action.status === "SHIPPED") {
-              Icon = LocalShippingOutlined;
-              color = "info";
-            } else if (
-              action.status === "PROCESSING" ||
-              action.status === "CONFIRMED"
-            ) {
-              Icon = FactCheckOutlined;
-              color = "info";
-            } else {
-              color = "primary";
-            }
-
-            return (
-              <MenuItem key={action.status} value={action.status}>
-                <Icon color={color} fontSize="small" sx={{ mr: 1 }} />
-                {action.label}
-              </MenuItem>
-            );
-          })}
+          {nextStatusActions.map((action) => (
+            <MenuItem key={action.status} value={action.status}>
+              {action.label}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
     </Box>
@@ -251,10 +205,6 @@ const statusFilters: { value: StatusFilter; label: string }[] = [
 const sortOptions = [
   { value: "orderDate_desc", label: "Date: Mới nhất" },
   { value: "orderDate_asc", label: "Date: Cũ nhất" },
-  { value: "totalPrice_desc", label: "Total: Cao đến Thấp" },
-  { value: "totalPrice_asc", label: "Total: Thấp đến Cao" },
-  { value: "id_asc", label: "ID: Tăng dần" },
-  { value: "id_desc", label: "ID: Giảm dần" },
 ];
 
 interface CustomToolbarProps {
@@ -265,73 +215,65 @@ interface CustomToolbarProps {
   statusFilter: StatusFilter;
   onStatusFilterChange: (event: SelectChangeEvent) => void;
 }
-
-const CustomToolbar: React.FC<CustomToolbarProps> = ({
-  searchTerm,
-  onSearchChange,
-  sortBy,
-  onSortChange,
-  statusFilter,
-  onStatusFilterChange,
-}) => {
-  return (
-    <Box
-      sx={{
-        p: 2,
-        display: "flex",
-        justifyContent: "space-between",
-        gap: 2,
-        flexWrap: "wrap",
-        borderBottom: "1px solid",
-        borderColor: "divider",
+const CustomToolbar: React.FC<CustomToolbarProps> = (props) => (
+  <Box
+    sx={{
+      p: 2,
+      display: "flex",
+      justifyContent: "space-between",
+      gap: 2,
+      flexWrap: "wrap",
+      borderBottom: "1px solid",
+      borderColor: "divider",
+    }}
+  >
+    <TextField
+      variant="outlined"
+      size="small"
+      placeholder="Tìm kiếm order (ID, Customer...)"
+      value={props.searchTerm}
+      onChange={props.onSearchChange}
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <Search />
+          </InputAdornment>
+        ),
       }}
-    >
-      <TextField
-        variant="outlined"
-        size="small"
-        placeholder="Tìm kiếm order (ID, Customer, Seller...)"
-        value={searchTerm}
-        onChange={onSearchChange}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <Search />
-            </InputAdornment>
-          ),
-        }}
-        sx={{
-          width: { xs: "100%", sm: 300 },
-        }}
-      />
-      <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Status</InputLabel>
-          <Select
-            value={statusFilter}
-            label="Status"
-            onChange={onStatusFilterChange}
-          >
-            {statusFilters.map((opt) => (
-              <MenuItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl size="small" sx={{ minWidth: 200 }}>
-          <InputLabel>Sắp xếp theo</InputLabel>
-          <Select value={sortBy} label="Sắp xếp theo" onChange={onSortChange}>
-            {sortOptions.map((opt) => (
-              <MenuItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
+      sx={{ width: { xs: "100%", sm: 300 } }}
+    />
+    <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+      <FormControl size="small" sx={{ minWidth: 150 }}>
+        <InputLabel>Status</InputLabel>
+        <Select
+          value={props.statusFilter}
+          label="Status"
+          onChange={props.onStatusFilterChange}
+        >
+          {statusFilters.map((opt) => (
+            <MenuItem key={opt.value} value={opt.value}>
+              {opt.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <FormControl size="small" sx={{ minWidth: 200 }}>
+        <InputLabel>Sắp xếp theo</InputLabel>
+        <Select
+          value={props.sortBy}
+          label="Sắp xếp theo"
+          onChange={props.onSortChange}
+        >
+          {sortOptions.map((opt) => (
+            <MenuItem key={opt.value} value={opt.value}>
+              {opt.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
     </Box>
-  );
-};
+  </Box>
+);
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat("en-US", {
@@ -340,7 +282,7 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-const OrderManagementPage = () => {
+const SellerOrderManagementPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rows, setRows] = useState<ApiOrderData[]>([]);
@@ -353,20 +295,23 @@ const OrderManagementPage = () => {
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
-    severity: "success" | "error";
+    severity: "success" | "error" | "info";
   } | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("orderDate_desc");
 
+  const { latestOrderUpdate } = useNotification();
+
   const fetchOrders = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await adminService.getAdminOrders(
+      const response = await sellerService.getMySellOrders(
         paginationModel.page + 1,
         paginationModel.pageSize,
-        statusFilter
+        statusFilter,
+        searchTerm
       );
       if (response.code === 200 && response.data) {
         setRows(response.data.pageContent);
@@ -390,40 +335,66 @@ const OrderManagementPage = () => {
   ]);
 
   useEffect(() => {
-    if (paginationModel.page !== 0) {
-      setPaginationModel((prev) => ({ ...prev, page: 0 }));
-    } else {
-      const delayDebounceFn = setTimeout(() => {
-        fetchOrders();
-      }, 500);
+    const delayDebounceFn = setTimeout(() => {
+      fetchOrders();
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [fetchOrders]);
 
-      return () => clearTimeout(delayDebounceFn);
+  
+  useEffect(() => {
+    if (latestOrderUpdate) {
+      setRows((prevRows) => {
+        const orderIndex = prevRows.findIndex(
+          (o) => o.orderId === latestOrderUpdate.orderId
+        );
+
+        if (orderIndex > -1) {
+          
+          const updatedRows = [...prevRows];
+          updatedRows[orderIndex] = {
+            ...updatedRows[orderIndex],
+            ...latestOrderUpdate,
+          };
+
+          setSnackbar({
+            open: true,
+            message: `Order #${latestOrderUpdate.orderId} updated: ${latestOrderUpdate.orderStatus}`,
+            severity: "info",
+          });
+          return updatedRows;
+        } else {
+          
+          
+          
+          setSnackbar({
+            open: true,
+            message: `New Order Received #${latestOrderUpdate.orderId}`,
+            severity: "success",
+          });
+          return [latestOrderUpdate, ...prevRows];
+        }
+      });
     }
-  }, [
-    searchTerm,
-    sortBy,
-    statusFilter,
-    paginationModel.page,
-    paginationModel.pageSize,
-  ]);
+  }, [latestOrderUpdate]);
+  
 
   const handleActionUpdateStatus = useCallback(
     async (orderId: string, newStatus: ApiOrderStatus) => {
       try {
-        const response = await adminService.updateAdminOrderStatus(
+        const response = await sellerService.updateSellOrderStatus(
           orderId,
           newStatus
         );
-
         if (response.code === 200) {
           setSnackbar({
             open: true,
-            message: `Order #${
-              orderId.split("-")[0]
-            } status updated to ${newStatus}`,
+            message: `Order status updated to ${newStatus}`,
             severity: "success",
           });
-          fetchOrders();
+          
+          
+          
         } else {
           throw new Error(response.message);
         }
@@ -438,17 +409,15 @@ const OrderManagementPage = () => {
         });
       }
     },
-    [fetchOrders]
+    [] 
   );
 
-  const handleCloseSnackbar = () => {
-    setSnackbar(null);
-  };
+  const handleCloseSnackbar = () => setSnackbar(null);
 
   const columns: GridColDef[] = [
     {
       field: "orderId",
-      headerName: "Order ID (UUID)",
+      headerName: "Order ID",
       width: 300,
     },
     {
@@ -460,8 +429,6 @@ const OrderManagementPage = () => {
       valueFormatter: (value: Date | null) =>
         value ? format(value, "dd/MM/yyyy") : "N/A",
       type: "date",
-      align: "center",
-      headerAlign: "center",
     },
     {
       field: "customer",
@@ -471,41 +438,25 @@ const OrderManagementPage = () => {
         `${row.user?.firstName || ""} ${row.user?.lastName || ""}`,
     },
     {
-      field: "customerPhone",
-      headerName: "Phone",
-      width: 130,
-      valueGetter: (_value: any, row: ApiOrderData) => row.user?.phone || "N/A",
-      align: "center",
-      headerAlign: "center",
-    },
-
-    {
       field: "totalPrice",
-      headerName: "Total",
-      width: 100,
+      headerName: "My Items Total",
+      width: 120,
       type: "number",
       valueFormatter: (value: number) => formatCurrency(value || 0),
     },
     {
       field: "totalItem",
-      headerName: "Items",
+      headerName: "My Items",
       width: 80,
       type: "number",
       align: "center",
-      headerAlign: "center",
     },
     {
       field: "orderStatus",
       headerName: "Status",
       width: 150,
-      type: "singleSelect",
-      valueOptions: allStatuses,
-      align: "center",
-      headerAlign: "center",
       renderCell: (params: GridRenderCellParams<any, ApiOrderStatus>) => {
-        const props = getStatusChipProps(
-          (params.value as ApiOrderStatus) || "PENDING"
-        );
+        const props = getStatusChipProps(params.value || "PENDING");
         return <Chip {...props} size="small" variant="outlined" />;
       },
     },
@@ -513,10 +464,8 @@ const OrderManagementPage = () => {
       field: "customActions",
       headerName: "Actions",
       sortable: false,
-      filterable: false,
-      width: 250,
+      width: 200,
       align: "center",
-      headerAlign: "center",
       renderCell: (params: GridRenderCellParams<ApiOrderData>) => (
         <ActionButtonsCell
           {...params}
@@ -534,7 +483,7 @@ const OrderManagementPage = () => {
         className="font-bold"
         sx={{ mb: 4 }}
       >
-        Order Management
+        My Orders
       </Typography>
 
       {error && (
@@ -588,9 +537,8 @@ const OrderManagementPage = () => {
             "& .MuiDataGrid-cell": {
               display: "flex",
               alignItems: "center",
-              py: 2, // CẬP NHẬT: Tăng padding dọc
+              py: 2,
             },
-
             "& .MuiDataGrid-cell[data-field='totalItem']": {
               justifyContent: "center",
             },
@@ -601,9 +549,6 @@ const OrderManagementPage = () => {
               justifyContent: "center",
             },
             "& .MuiDataGrid-cell[data-field='orderDate']": {
-              justifyContent: "center",
-            },
-            "& .MuiDataGrid-cell[data-field='customerPhone']": {
               justifyContent: "center",
             },
             "& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within": {
@@ -638,4 +583,4 @@ const OrderManagementPage = () => {
   );
 };
 
-export default OrderManagementPage;
+export default SellerOrderManagementPage;

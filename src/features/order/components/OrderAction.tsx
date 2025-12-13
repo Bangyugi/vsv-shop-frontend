@@ -1,13 +1,7 @@
 import { useState } from "react";
-import {
-  Button,
-  Stack,
-  CircularProgress,
-  Snackbar,
-  Alert,
-} from "@mui/material";
+import { Button, Stack, CircularProgress } from "@mui/material";
 
-import type { ApiOrderStatus } from "../../../types/order";
+import type { ApiOrderData, ApiOrderStatus } from "../../../types/order";
 import CancelOrderDialog from "./CancelOrderDialog";
 import RequestRefundDialog from "./RequestRefundDialog";
 
@@ -16,23 +10,23 @@ import * as orderService from "../../../services/orderService";
 interface OrderActionsProps {
   status: ApiOrderStatus;
   orderId: string;
-  onOrderUpdate: () => void;
+  onOrderUpdate: (newOrderData?: ApiOrderData) => void;
+  
+  onShowNotification: (
+    message: string,
+    severity: "success" | "error" | "info"
+  ) => void;
 }
 
 const OrderActions = ({
   status,
   orderId,
   onOrderUpdate,
+  onShowNotification,
 }: OrderActionsProps) => {
   const [openCancel, setOpenCancel] = useState(false);
   const [openRefund, setOpenRefund] = useState(false);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean;
-    message: string;
-    severity: "success" | "error";
-  } | null>(null);
 
   const canCancel = status === "PENDING" || status === "CONFIRMED";
   const canRequestRefund = status === "DELIVERED";
@@ -42,28 +36,22 @@ const OrderActions = ({
   const handleCancelSubmit = async (reason: string) => {
     console.log("Reason for cancellation:", reason);
     setIsSubmitting(true);
-    setSnackbar(null);
+
     try {
       const response = await orderService.cancelOrder(orderId);
-      if (response.code === 200) {
-        setSnackbar({
-          open: true,
-          message: "Order cancelled successfully!",
-          severity: "success",
-        });
-        onOrderUpdate();
+      if (response.code === 200 && response.data) {
+        
+        onShowNotification("Order cancelled successfully!", "success");
+        
+        onOrderUpdate(response.data);
       } else {
         throw new Error(response.message || "Failed to cancel order");
       }
     } catch (error: any) {
-      setSnackbar({
-        open: true,
-        message:
-          error.response?.data?.message ||
-          error.message ||
-          "An error occurred.",
-        severity: "error",
-      });
+      onShowNotification(
+        error.response?.data?.message || error.message || "An error occurred.",
+        "error"
+      );
     } finally {
       setIsSubmitting(false);
       setOpenCancel(false);
@@ -72,17 +60,8 @@ const OrderActions = ({
 
   const handleRefundSubmit = (reason: string) => {
     console.log("Reason for refund:", reason);
-
-    setSnackbar({
-      open: true,
-      message: "Refund request submitted (demo).",
-      severity: "success",
-    });
+    onShowNotification("Refund request submitted (demo).", "success");
     setOpenRefund(false);
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar(null);
   };
 
   return (
@@ -135,23 +114,7 @@ const OrderActions = ({
         onSubmit={handleRefundSubmit}
       />
 
-      <Snackbar
-        open={!!snackbar}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        {snackbar ? (
-          <Alert
-            onClose={handleCloseSnackbar}
-            severity={snackbar.severity}
-            variant="filled"
-            sx={{ width: "100%" }}
-          >
-            {snackbar.message}
-          </Alert>
-        ) : undefined}
-      </Snackbar>
+      {/* Đã xóa Snackbar nội bộ */}
     </>
   );
 };

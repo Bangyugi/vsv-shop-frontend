@@ -21,8 +21,13 @@ import OrderActions from "../components/OrderAction";
 import { useState, useEffect, useCallback } from "react";
 
 import * as orderService from "../../../services/orderService";
-import type { ApiOrderData, ApiOrderItem } from "../../../types/order";
+import type {
+  ApiOrderData,
+  ApiOrderItem,
+  ApiOrderStatus,
+} from "../../../types/order";
 import ReviewDialog from "../components/ReviewDialog";
+import { useNotification } from "../../../contexts/NotificationContext";
 
 const OrderDetailPage = () => {
   const { orderId } = useParams<{ orderId: string }>();
@@ -30,13 +35,28 @@ const OrderDetailPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [order, setOrder] = useState<ApiOrderData | null>(null);
   const navigate = useNavigate();
+  const { latestOrderUpdate } = useNotification();
 
   const [reviewingItem, setReviewingItem] = useState<ApiOrderItem | null>(null);
+
+  
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
-    severity: "success" | "error";
+    severity: "success" | "error" | "info";
   } | null>(null);
+
+  const handleShowSnackbar = useCallback(
+    (message: string, severity: "success" | "error" | "info") => {
+      setSnackbar({ open: true, message, severity });
+    },
+    []
+  );
+
+  const handleCloseSnackbar = () => {
+    setSnackbar(null);
+  };
+  
 
   const fetchOrderDetails = useCallback(async () => {
     if (!orderId) {
@@ -44,7 +64,9 @@ const OrderDetailPage = () => {
       setLoading(false);
       return;
     }
-    setLoading(true);
+    
+    if (!order) setLoading(true);
+
     setError(null);
     try {
       const response = await orderService.getOrderByUuid(orderId);
@@ -60,31 +82,88 @@ const OrderDetailPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [orderId]);
+  }, [orderId, order]);
 
   useEffect(() => {
     fetchOrderDetails();
-  }, [fetchOrderDetails]);
+    
+  }, []);
 
-  const handleOpenReview = (item: ApiOrderItem) => {
-    setReviewingItem(item);
+  
+  const shouldUpdateStatus = (
+    currentStatus: ApiOrderStatus,
+    newStatus: ApiOrderStatus
+  ): boolean => {
+    const finalStatuses: ApiOrderStatus[] = [
+      "CANCELLED",
+      "RETURNED",
+      "DELIVERED",
+    ];
+    const isPrevFinal = finalStatuses.includes(currentStatus);
+    const isNewFinal = finalStatuses.includes(newStatus);
+
+    
+    if (isPrevFinal && !isNewFinal) {
+      return false;
+    }
+    return true;
   };
 
-  const handleCloseReview = () => {
-    setReviewingItem(null);
-  };
+  
+  const handleOrderUpdate = useCallback(
+    (newOrderData?: ApiOrderData) => {
+      if (newOrderData) {
+        setOrder((prevOrder) => {
+          if (!prevOrder) return newOrderData;
+
+          if (
+            !shouldUpdateStatus(prevOrder.orderStatus, newOrderData.orderStatus)
+          ) {
+            console.log(
+              `[Order Update Skipped] Kept final status '${prevOrder.orderStatus}' vs incoming '${newOrderData.orderStatus}'`
+            );
+            return prevOrder;
+          }
+          return newOrderData;
+        });
+      } else {
+        fetchOrderDetails();
+      }
+    },
+    [fetchOrderDetails]
+  );
+
+  
+  useEffect(() => {
+    if (
+      latestOrderUpdate &&
+      order &&
+      latestOrderUpdate.orderId === order.orderId
+    ) {
+      
+      if (latestOrderUpdate.orderStatus !== order.orderStatus) {
+        
+        if (
+          shouldUpdateStatus(order.orderStatus, latestOrderUpdate.orderStatus)
+        ) {
+          handleOrderUpdate(latestOrderUpdate);
+          handleShowSnackbar(
+            `Order status updated: ${latestOrderUpdate.orderStatus}`,
+            "info"
+          );
+        } else {
+          console.warn("Ignored stale/invalid status update from WebSocket");
+        }
+      }
+    }
+  }, [latestOrderUpdate, order, handleOrderUpdate, handleShowSnackbar]);
+
+  const handleOpenReview = (item: ApiOrderItem) => setReviewingItem(item);
+  const handleCloseReview = () => setReviewingItem(null);
 
   const handleReviewSubmitted = () => {
     handleCloseReview();
-    setSnackbar({
-      open: true,
-      message: "Review submitted successfully! Thank you.",
-      severity: "success",
-    });
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar(null);
+    handleShowSnackbar("Review submitted successfully! Thank you.", "success");
   };
 
   if (loading) {
@@ -104,11 +183,6 @@ const OrderDetailPage = () => {
       >
         <Typography variant="h4" className="font-bold" gutterBottom>
           {error ? "Error Loading Order" : "404 - Order Not Found"}
-        </Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>
-          {error
-            ? error
-            : `The order with ID "${orderId}" does not exist or you do not have access to it.`}
         </Typography>
         <Button
           variant="contained"
@@ -170,7 +244,8 @@ const OrderDetailPage = () => {
               <OrderActions
                 status={order.orderStatus}
                 orderId={order.orderId}
-                onOrderUpdate={fetchOrderDetails}
+                onOrderUpdate={handleOrderUpdate}
+                onShowNotification={handleShowSnackbar} 
               />
             </Grid>
           </Grid>

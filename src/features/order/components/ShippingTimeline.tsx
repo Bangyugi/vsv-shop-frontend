@@ -160,7 +160,9 @@ const ShippingTimeline = ({ status }: ShippingTimelineProps) => {
             }
 
             return (
-              <Step key={label as string} {...stepProps}>
+              
+              <Step key={label as string} completed={stepProps.completed}>
+                
                 <StepLabel
                   StepIconComponent={(props) => (
                     <ColorlibStepIcon
