@@ -114,7 +114,7 @@ export const getMyProducts = (
 
 export const addMyProduct = (
   data: SellerProductFormValues,
-  categoryName: string
+  _categoryName: string
 ): Promise<ApiResponse<ApiProduct>> => {
   const discountPercent =
     data.price > 0
@@ -137,8 +137,8 @@ export const addMyProduct = (
 export const updateMyProduct = (
   productId: number,
   data: SellerProductFormValues,
-  categoryName: string,
-  existingProduct: ApiProduct
+  _categoryName: string,
+  _existingProduct: ApiProduct
 ): Promise<ApiResponse<ApiProduct>> => {
   const discountPercent =
     data.price > 0

@@ -9,7 +9,7 @@ import {
   Paper,
   TextField,
   CircularProgress,
-  InputAdornment,
+  // FIX: Xóa InputAdornment
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
@@ -63,7 +63,6 @@ const CartPage = () => {
     fetchCart(true);
   }, [fetchCart]);
 
-  // Sync coupon code from server state if available
   useEffect(() => {
     if (cartData?.couponCode) {
       setCouponCodeInput(cartData.couponCode);
@@ -94,10 +93,8 @@ const CartPage = () => {
 
   const hasCoupon = apiCouponPercentage > 0;
 
-  // Calculate the total BEFORE coupon applied, to show the discount amount accurately
   const preCouponSellingTotal = useMemo(() => {
     if (hasCoupon && apiCouponPercentage < 100) {
-      // Formula: Final = Pre * (1 - rate) => Pre = Final / (1 - rate)
       return apiSellingSubtotal / (1 - apiCouponPercentage / 100);
     }
     return apiSellingSubtotal;
@@ -153,7 +150,6 @@ const CartPage = () => {
       await applyCoupon(code);
       setLocalSuccess("Áp dụng mã thành công!");
     } catch (err: any) {
-      // Mapping Error based on doc.txt
       let message = "Có lỗi xảy ra, vui lòng thử lại.";
       const backendError = err.response?.data;
 
@@ -177,8 +173,6 @@ const CartPage = () => {
       }
 
       setLocalError(message);
-      // If error, maybe clear the invalid code from state if you want, 
-      // but keeping it allows user to correct it.
     } finally {
       setIsApplyingCoupon(false);
     }

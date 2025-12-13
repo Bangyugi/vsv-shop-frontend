@@ -45,7 +45,6 @@ export const SellerNotificationProvider: React.FC<
     duration: 3000,
   });
 
-  // Sử dụng useCallback để tránh tạo lại function gây re-render các component con
   const showNotification = useCallback(
     (
       message: string,
@@ -62,8 +61,9 @@ export const SellerNotificationProvider: React.FC<
     []
   );
 
+  // FIX: đổi event -> _event để tránh lỗi unused variable
   const hideNotification = useCallback(
-    (event?: React.SyntheticEvent | Event, reason?: string) => {
+    (_event?: React.SyntheticEvent | Event, reason?: string) => {
       if (reason === "clickaway") {
         return;
       }
@@ -72,7 +72,6 @@ export const SellerNotificationProvider: React.FC<
     []
   );
 
-  // useMemo để đảm bảo context value không thay đổi reference trừ khi logic thay đổi
   const contextValue = useMemo(
     () => ({
       showNotification,
@@ -85,17 +84,16 @@ export const SellerNotificationProvider: React.FC<
     <SellerNotificationContext.Provider value={contextValue}>
       {children}
 
-      {/* Global Snackbar UI - Đặt tại đây để không cần chèn vào từng page */}
       <Snackbar
         open={notification.open}
         autoHideDuration={notification.duration}
         onClose={hideNotification}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }} // Vị trí thường thấy ở Dashboard
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert
           onClose={hideNotification}
           severity={notification.severity}
-          variant="filled" // Style nổi bật cho Seller
+          variant="filled"
           sx={{ width: "100%", boxShadow: 3 }}
         >
           {notification.message}
@@ -105,7 +103,6 @@ export const SellerNotificationProvider: React.FC<
   );
 };
 
-// --- Custom Hook ---
 export const useSellerNotification = (): SellerNotificationContextType => {
   const context = useContext(SellerNotificationContext);
 

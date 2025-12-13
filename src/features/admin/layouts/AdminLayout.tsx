@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, CssBaseline, useTheme, useMediaQuery } from "@mui/material";
+import { Box, CssBaseline } from "@mui/material"; // FIX: Xóa import useTheme, useMediaQuery
 import { Outlet } from "react-router-dom";
 import AdminSidebar from "../components/AdminSidebar";
 import AdminHeader from "../components/AdminHeader";
@@ -7,8 +7,7 @@ import AdminHeader from "../components/AdminHeader";
 const DRAWER_WIDTH = 260;
 
 const AdminLayout: React.FC = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
+  // FIX: Xóa các biến theme, isMobile không sử dụng
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleDrawerToggle = () => {
@@ -48,11 +47,10 @@ const AdminLayout: React.FC = () => {
           mt: "64px",
         }}
       >
-        {/* Outlet sẽ render các page con (Dashboard, Users, Products...) */}
         <Outlet />
       </Box>
     </Box>
   );
 };
-// Update UI 
+
 export default AdminLayout;

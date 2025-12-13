@@ -16,7 +16,8 @@ import OrderSummary from "../components/OrderSummary";
 import PaymentMethod from "../components/PaymentMethod";
 import type { PaymentValue } from "../components/PaymentMethod";
 import type { UserAddress, CheckoutCartItem } from "../../../types";
-import type { ApiAddress, AddAddressRequest } from "../../../types/address";
+// FIX: Xóa ApiAddress
+import type { AddAddressRequest } from "../../../types/address";
 import type { CreateOrderRequest } from "../../../types/order";
 
 import { useAuth } from "../../../contexts/AuthContext";

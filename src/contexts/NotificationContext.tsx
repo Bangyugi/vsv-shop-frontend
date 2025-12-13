@@ -82,7 +82,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
       heartbeatOutgoing: 4000,
     });
 
-   client.onConnect = (frame) => {
+   // FIX: đổi frame -> _frame để tránh lỗi unused variable
+   client.onConnect = (_frame) => {
       console.log("Connected to WebSocket");
       setIsConnected(true);
 
@@ -97,8 +98,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
         // 3. Subscribe Admin Global Notifications (Text)
         client.subscribe("/topic/admin/notifications", handleNewNotification);
 
-        // 4. [CORRECTED] Subscribe Admin Global Order Updates (Data)
-        // Ensure this matches the backend destination in OrderServiceImpl.java
+        // 4. Subscribe Admin Global Order Updates (Data)
         client.subscribe("/topic/admin/orders", handleOrderUpdate); 
       }
     };

@@ -209,18 +209,15 @@ const OrderCard = forwardRef<
   </motion.div>
 ));
 
-// Updated default page size to 5 (or 10) to match better with server side pagination
 const PAGE_SIZE = 5;
 
 const OrderHistory = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { latestOrderUpdate, latestOrderEventType } = useNotification();
 
-  // Changed: Store only the current page's orders
   const [orders, setOrders] = useState<ApiOrderData[]>([]);
-  // Added: Pagination state
   const [totalPages, setTotalPages] = useState(1);
-  const [totalElements, setTotalElements] = useState(0);
+  // FIX: Xóa biến totalElements không sử dụng
   
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -232,7 +229,6 @@ const OrderHistory = () => {
     severity: "success" | "error" | "info";
   } | null>(null);
 
-  // Helper to parse URL params
   const getActiveTabFromUrl = (): OrderStatusTab => {
     const statusFromUrl = searchParams.get("status") as OrderStatusTab;
     return validStatuses.includes(statusFromUrl) ? statusFromUrl : "all";
@@ -249,24 +245,19 @@ const OrderHistory = () => {
     setIsLoading(true);
     setError(null);
     try {
-      // Call API with pagination parameters
       const response = await orderService.getMyOrders({
         pageNo: page,
         pageSize: PAGE_SIZE,
         sortBy: "orderDate",
         sortDir: "DESC",
-        // Note: Currently backend doc doesn't explicitly support status filtering
-        // so we fetch all and filter client-side for the current page view if necessary.
       });
 
-      // Handle both 'data' and 'result' based on the discrepancy in docs/types
       const responseData = response.data || response.result;
 
       if (response.code === 200 && responseData) {
-        // Map the paginated response
         setOrders(responseData.pageContent || []);
         setTotalPages(responseData.totalPages || 1);
-        setTotalElements(responseData.totalElements || 0);
+        // setTotalElements không còn cần thiết
       } else {
         throw new Error(response.message || "Failed to fetch orders");
       }
@@ -281,13 +272,12 @@ const OrderHistory = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page]); // Re-fetch when page changes
+  }, [page]); 
 
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
 
-  // --- Real-time Update Logic (Updated for Event Types) ---
   useEffect(() => {
     if (latestOrderUpdate && latestOrderEventType) {
       if (latestOrderEventType === "BUYER_ORDER_UPDATE") {
@@ -311,7 +301,6 @@ const OrderHistory = () => {
       }
     }
   }, [latestOrderUpdate, latestOrderEventType]);
-  // -----------------------------
 
   const handleChangeTab = (
     _event: React.SyntheticEvent,
@@ -319,7 +308,6 @@ const OrderHistory = () => {
   ) => {
     const newParams = new URLSearchParams(searchParams);
     newParams.set("status", newValue);
-    // Reset to page 1 when changing filters
     newParams.set("page", "1");
     setSearchParams(newParams);
   };
@@ -330,17 +318,12 @@ const OrderHistory = () => {
   ) => {
     const newParams = new URLSearchParams(searchParams);
     newParams.set("page", value.toString());
-    // Keep the current status filter
     if (activeTab !== "all") {
       newParams.set("status", activeTab);
     }
     setSearchParams(newParams);
-    // window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Filter orders for the current page based on the active tab.
-  // Note: Since pagination is server-side and we don't have a backend status filter,
-  // this might result in empty lists for some pages if the items don't match the tab.
   const displayedOrders = useMemo(() => {
     if (activeTab === "all") {
       return orders;
@@ -365,7 +348,6 @@ const OrderHistory = () => {
       message: "Review submitted successfully! Thank you.",
       severity: "success",
     });
-    // Refresh to update the "Reviewed" status
     fetchOrders();
   };
 
@@ -444,7 +426,6 @@ const OrderHistory = () => {
               </AnimatePresence>
             </Box>
 
-            {/* Pagination Control */}
             {totalPages > 1 && (
               <Box
                 sx={{

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, CssBaseline, useTheme, useMediaQuery } from "@mui/material";
+import { Box, CssBaseline } from "@mui/material"; // FIX: Xóa import useTheme, useMediaQuery
 import { Outlet } from "react-router-dom";
 import SellerSidebar from "../components/SellerSidebar.tsx";
 import SellerHeader from "../components/SellerHeader.tsx";
@@ -9,16 +9,13 @@ import { SellerNotificationProvider } from "../../../contexts/SellerNotification
 const DRAWER_WIDTH = 260;
 
 const SellerLayout: React.FC = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
+  // FIX: Xóa các biến theme, isMobile không sử dụng
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  // Render
-  // console.log("SellerLayout rendered");
   return (
     <SellerNotificationProvider>
       <Box

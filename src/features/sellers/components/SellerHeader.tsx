@@ -74,7 +74,7 @@ const SellerHeader: React.FC<SellerHeaderProps> = ({
     handleAccountMenuClose();
   };
 
-  const handleNotificationClick = (id: number, link?: string) => {
+  const handleNotificationClick = (id: number, _link?: string) => {
     markAsRead(id);
     handleNotifMenuClose();
     // Nếu có link thì react-router sẽ handle thông qua component prop

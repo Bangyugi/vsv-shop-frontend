@@ -1,8 +1,9 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { tokenStorage } from "../utils/tokenStorage";
+// FIX: Import ApiResponse từ types gốc, không phải từ auth
+import type { ApiResponse } from "../types"; 
 import type {
   AuthResponseData,
-  ApiResponse,
   RefreshTokenRequest,
 } from "../types/auth";
 
