@@ -2,7 +2,7 @@ import api from "../api/axios";
 import type { ApiCartResponse } from "../types/cart";
 import type { ApiResponse } from "../types";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://vsv-shop-backend-production.up.railway.app";
 
 export const getMyCart = (): Promise<ApiCartResponse> => {
   return api

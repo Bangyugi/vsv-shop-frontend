@@ -1,8 +1,9 @@
 import api from "../api/axios";
 import type { ApiResponse } from "../types";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
-
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "https://vsv-shop-backend-production.up.railway.app/api";
+  
 // Ensure the return type matches what we extract (string)
 export const uploadFile = async (file: File): Promise<string> => {
   const formData = new FormData();

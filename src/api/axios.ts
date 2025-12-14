@@ -1,6 +1,5 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { tokenStorage } from "../utils/tokenStorage";
-// FIX: Import ApiResponse từ types gốc, không phải từ auth
 import type { ApiResponse } from "../types"; 
 import type {
   AuthResponseData,
@@ -8,7 +7,7 @@ import type {
 } from "../types/auth";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+  import.meta.env.VITE_API_BASE_URL || "https://vsv-shop-backend-production.up.railway.app";
 
 const api = axios.create({
   baseURL: API_BASE_URL,

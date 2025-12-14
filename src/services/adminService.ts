@@ -25,7 +25,7 @@ import type {
 } from "../types/order";
 
 const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+  import.meta.env.VITE_API_BASE_URL || "https://vsv-shop-backend-production.up.railway.app/api";
 
 interface Page<T> {
   pageContent: T[];
