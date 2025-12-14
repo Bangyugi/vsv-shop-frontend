@@ -8,11 +8,9 @@ import type {
   DeleteAddressResponse,
 } from "../types/address";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://vsv-shop-backend-production.up.railway.app";
-
 export const getMyAddresses = (): Promise<GetAddressesResponse> => {
   return api
-    .get<GetAddressesResponse>(`${BASE_URL}/api/addresses`)
+    .get<GetAddressesResponse>("/api/addresses")
     .then((res) => res.data);
 };
 
@@ -20,7 +18,7 @@ export const addAddress = (
   data: AddAddressRequest
 ): Promise<AddAddressResponse> => {
   return api
-    .post<AddAddressResponse>(`${BASE_URL}/api/addresses`, data)
+    .post<AddAddressResponse>("/api/addresses", data)
     .then((res) => res.data);
 };
 
@@ -29,7 +27,7 @@ export const updateAddress = (
   data: UpdateAddressRequest
 ): Promise<UpdateAddressResponse> => {
   return api
-    .put<UpdateAddressResponse>(`${BASE_URL}/api/addresses/${addressId}`, data)
+    .put<UpdateAddressResponse>(`/api/addresses/${addressId}`, data)
     .then((res) => res.data);
 };
 
@@ -37,6 +35,6 @@ export const deleteAddress = (
   addressId: number
 ): Promise<DeleteAddressResponse> => {
   return api
-    .delete<DeleteAddressResponse>(`${BASE_URL}/api/addresses/${addressId}`)
+    .delete<DeleteAddressResponse>(`/api/addresses/${addressId}`)
     .then((res) => res.data);
 };

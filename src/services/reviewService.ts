@@ -5,8 +5,6 @@ import type {
   CreateReviewResponse,
 } from "../types/review";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://vsv-shop-backend-production.up.railway.app";
-
 export const getProductReviews = (
   productId: number,
   pageNo: number,
@@ -14,7 +12,7 @@ export const getProductReviews = (
 ): Promise<GetProductReviewsResponse> => {
   return api
     .get<GetProductReviewsResponse>(
-      `${BASE_URL}/api/reviews/products/${productId}`,
+      `/api/reviews/products/${productId}`,
       {
         params: {
           pageNo: pageNo,
@@ -30,7 +28,7 @@ export const createReview = (
   data: CreateReviewRequest
 ): Promise<CreateReviewResponse> => {
   return api
-    .post<CreateReviewResponse>(`${BASE_URL}/api/reviews/${productId}`, data)
+    .post<CreateReviewResponse>(`/api/reviews/${productId}`, data)
     .then((res) => res.data);
 };
 
@@ -40,7 +38,7 @@ export const createReviewForOrderItem = (
 ): Promise<CreateReviewResponse> => {
   return api
     .post<CreateReviewResponse>(
-      `${BASE_URL}/api/reviews/order-item/${orderItemId}`,
+      `/api/reviews/order-item/${orderItemId}`,
       data
     )
     .then((res) => res.data);

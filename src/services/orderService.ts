@@ -8,19 +8,16 @@ import type {
 } from "../types/order";
 import type { ApiResponse } from "../types";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://vsv-shop-backend-production.up.railway.app";
-
 export const getMyOrders = (
   params?: OrderQueryParams
 ): Promise<GetMyOrdersResponse> => {
   return api
-    .get<GetMyOrdersResponse>(`${BASE_URL}/api/orders/my-orders`, {
+    .get<GetMyOrdersResponse>("/api/orders/my-orders", {
       params: {
         pageNo: params?.pageNo || 1,
         pageSize: params?.pageSize || 10,
         sortBy: params?.sortBy || "orderDate",
         sortDir: params?.sortDir || "DESC",
-        // status: params?.status // Uncomment if backend supports status filtering
       },
     })
     .then((res) => res.data);
@@ -30,7 +27,7 @@ export const createOrder = (
   data: CreateOrderRequest
 ): Promise<ApiResponse<ApiOrderData[]>> => {
   return api
-    .post<ApiResponse<ApiOrderData[]>>(`${BASE_URL}/api/orders`, data)
+    .post<ApiResponse<ApiOrderData[]>>("/api/orders", data)
     .then((res) => res.data);
 };
 
@@ -38,7 +35,7 @@ export const getOrderByUuid = (
   orderUuid: string
 ): Promise<ApiResponse<ApiOrderData>> => {
   return api
-    .get<ApiResponse<ApiOrderData>>(`${BASE_URL}/api/orders/uuid/${orderUuid}`)
+    .get<ApiResponse<ApiOrderData>>(`/api/orders/uuid/${orderUuid}`)
     .then((res) => res.data);
 };
 
@@ -47,7 +44,7 @@ export const cancelOrder = (
 ): Promise<CancelOrderResponse> => {
   return api
     .patch<CancelOrderResponse>(
-      `${BASE_URL}/api/orders/uuid/${orderUuid}/cancel`
+      `/api/orders/uuid/${orderUuid}/cancel`
     )
     .then((res) => res.data);
 };

@@ -1,11 +1,12 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { tokenStorage } from "../utils/tokenStorage";
-import type { ApiResponse } from "../types"; 
+import type { ApiResponse } from "../types";
 import type {
   AuthResponseData,
   RefreshTokenRequest,
 } from "../types/auth";
 
+// CHÚ Ý: Chỉ để domain gốc, không thêm /api ở đây
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "https://vsv-shop-backend-production.up.railway.app";
 
@@ -40,10 +41,8 @@ api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = tokenStorage.getAccessToken();
     if (token) {
-      console.log(`Request Interceptor: Attaching token to ${config.url}`);
       config.headers.Authorization = `Bearer ${token}`;
     }
-
     return config;
   },
   (error) => Promise.reject(error)
@@ -60,9 +59,10 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // Nếu lỗi 401 và không phải request refresh token
     if (
       error.response?.status === 401 &&
-      originalRequest.url !== `${API_BASE_URL}/auth/refreshtoken` &&
+      !originalRequest.url?.includes("/auth/refreshtoken") &&
       !originalRequest._retry
     ) {
       if (isRefreshing) {
@@ -84,9 +84,6 @@ api.interceptors.response.use(
       const refreshToken = tokenStorage.getRefreshToken();
 
       if (!refreshToken) {
-        console.error(
-          "Auth Interceptor: 401 detected but no refresh token. Logging out."
-        );
         isRefreshing = false;
         tokenStorage.clearTokens();
         window.location.href = "/login";
@@ -94,46 +91,30 @@ api.interceptors.response.use(
       }
 
       try {
-        console.log("Auth Interceptor: Attempting token refresh...");
         const refreshRequest: RefreshTokenRequest = { refreshToken };
-
+        
+        // Gọi endpoint refresh token (đường dẫn tương đối)
         const rs = await axios.post<ApiResponse<AuthResponseData>>(
-          `${API_BASE_URL}/auth/refreshtoken`,
-          refreshRequest,
-          { baseURL: "" }
+          `${API_BASE_URL}/api/auth/refreshtoken`, 
+          refreshRequest
         );
 
         if (rs.data.code === 200 && rs.data.data) {
           const { accessToken, refreshToken: newRefreshToken } = rs.data.data;
-          console.log("Auth Interceptor: Token refresh successful.");
-
+          
           tokenStorage.setAccessToken(accessToken);
           tokenStorage.setRefreshToken(newRefreshToken);
 
-          api.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${accessToken}`;
-
+          api.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
 
           processQueue(null, accessToken);
 
           return api(originalRequest);
         } else {
-          console.error(
-            "Auth Interceptor: Refresh token API returned non-200 status:",
-            rs.data.message
-          );
-          throw new Error(rs.data.message || "Refresh token API failed");
+          throw new Error(rs.data.message || "Refresh token failed");
         }
       } catch (refreshError: any) {
-        console.error(
-          "Auth Interceptor: Token refresh failed:",
-          refreshError?.response?.data?.message ||
-            refreshError?.message ||
-            refreshError
-        );
-
         tokenStorage.clearTokens();
         processQueue(refreshError as AxiosError, null);
         window.location.href = "/login";

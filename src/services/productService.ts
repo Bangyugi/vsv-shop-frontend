@@ -8,8 +8,6 @@ import type {
 } from "../types/product";
 import type { ApiResponse } from "../types";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://vsv-shop-backend-production.up.railway.app";
-
 export const getProducts = (
   params: ProductApiParams
 ): Promise<GetProductsResponse> => {
@@ -24,8 +22,9 @@ export const getProducts = (
     }
   });
   console.log("Fetching products with params:", apiParams);
+  
   return api
-    .get<GetProductsResponse>(`${BASE_URL}/api/products`, {
+    .get<GetProductsResponse>("/api/products", {
       params: apiParams,
     })
     .then((res) => {
@@ -56,7 +55,7 @@ export const getProductById = (
 ): Promise<ApiResponse<ApiProduct>> => {
   console.log(`Fetching product with ID: ${productId}`);
   return api
-    .get<ApiResponse<ApiProduct>>(`${BASE_URL}/api/products/${productId}`)
+    .get<ApiResponse<ApiProduct>>(`/api/products/${productId}`)
     .then((res) => {
       console.log("API response for product detail:", res.data);
       if (
@@ -88,7 +87,7 @@ export const createProduct = (
 ): Promise<ApiResponse<ApiProduct>> => {
   console.log(`Creating new product:`, data);
   return api
-    .post<ApiResponse<ApiProduct>>(`${BASE_URL}/api/products/create`, data)
+    .post<ApiResponse<ApiProduct>>("/api/products/create", data)
     .then((res) => res.data)
     .catch((error) => {
       console.error(`Error creating product:`, error);
@@ -105,9 +104,8 @@ export const updateProduct = (
   data: UpdateProductRequest
 ): Promise<ApiResponse<ApiProduct>> => {
   console.log(`Updating product with ID: ${productId}`, data);
-  const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
   return api
-    .put<ApiResponse<ApiProduct>>(`${API_URL}/api/products/${productId}`, data)
+    .put<ApiResponse<ApiProduct>>(`/api/products/${productId}`, data)
     .then((res) => res.data)
     .catch((error) => {
       console.error(`Error updating product ${productId}:`, error);
@@ -123,10 +121,8 @@ export const deleteProduct = (
   productId: number
 ): Promise<ApiResponse<null>> => {
   console.log(`Deleting product with ID: ${productId}`);
-  const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
-
   return api
-    .delete<ApiResponse<null>>(`${API_URL}/api/products/${productId}`)
+    .delete<ApiResponse<null>>(`/api/products/${productId}`)
     .then((res) => res.data)
     .catch((error) => {
       console.error(`Error deleting product ${productId}:`, error);

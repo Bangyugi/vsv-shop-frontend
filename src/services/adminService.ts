@@ -1,31 +1,23 @@
 import api from "../api/axios";
-
 import type { ApiResponse } from "../types";
 import type { UserData } from "../types/auth";
-
 import type {
   ApiSellerData,
   SellerStatus,
   GetSellersResponse,
   UpdateSellerStatusResponse,
 } from "../types/seller";
-
 import type { ApiProduct, ProductPageData } from "../types/product";
-
 import type {
   ApiCategory,
   CreateCategoryRequest,
   UpdateCategoryRequest,
 } from "../types/category";
-
 import type {
   ApiOrderData,
   ApiOrderStatus,
   OrderPageData,
 } from "../types/order";
-
-const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "https://vsv-shop-backend-production.up.railway.app/api";
 
 interface Page<T> {
   pageContent: T[];
@@ -34,7 +26,8 @@ interface Page<T> {
   totalElements: number;
   totalPages: number;
 }
-// hi ae
+
+// === USER MANAGEMENT ===
 export const getUsers = async (
   page: number,
   size: number,
@@ -43,7 +36,7 @@ export const getUsers = async (
   sortDir?: "ASC" | "DESC"
 ): Promise<ApiResponse<Page<UserData>>> => {
   return api
-    .get<ApiResponse<Page<UserData>>>(`${BASE_URL}/admin/users`, {
+    .get<ApiResponse<Page<UserData>>>("/api/admin/users", {
       params: {
         pageNo: page,
         pageSize: size,
@@ -57,23 +50,22 @@ export const getUsers = async (
 
 export const getUserById = (userId: number): Promise<ApiResponse<UserData>> => {
   return api
-    .get<ApiResponse<UserData>>(`${BASE_URL}/admin/users/find/${userId}`)
+    .get<ApiResponse<UserData>>(`/api/admin/users/find/${userId}`)
     .then((res) => res.data);
 };
 
 export const deleteUser = (userId: number): Promise<ApiResponse<null>> => {
   return api
-    .delete<ApiResponse<null>>(`${BASE_URL}/admin/users/delete/${userId}`)
+    .delete<ApiResponse<null>>(`/api/admin/users/delete/${userId}`)
     .then((res) => res.data);
 };
 
+// === SELLER MANAGEMENT ===
 export const getSellerById = (
   sellerUserId: number
 ): Promise<ApiResponse<ApiSellerData>> => {
   return api
-    .get<ApiResponse<ApiSellerData>>(
-      `${BASE_URL}/admin/sellers/${sellerUserId}`
-    )
+    .get<ApiResponse<ApiSellerData>>(`/api/admin/sellers/${sellerUserId}`)
     .then((res) => res.data);
 };
 
@@ -86,7 +78,7 @@ export const getSellers = async (
   sortDir?: "ASC" | "DESC"
 ): Promise<GetSellersResponse> => {
   return api
-    .get<GetSellersResponse>(`${BASE_URL}/admin/sellers`, {
+    .get<GetSellersResponse>("/api/admin/sellers", {
       params: {
         pageNo: page,
         pageSize: size,
@@ -106,7 +98,7 @@ export const getPendingSellers = async (
   sortDir?: "ASC" | "DESC"
 ): Promise<GetSellersResponse> => {
   return api
-    .get<GetSellersResponse>(`${BASE_URL}/admin/sellers/pending`, {
+    .get<GetSellersResponse>("/api/admin/sellers/pending", {
       params: {
         pageNo: page,
         pageSize: size,
@@ -121,15 +113,15 @@ export const updateSellerStatus = async (
   sellerId: number,
   newStatus: SellerStatus
 ): Promise<UpdateSellerStatusResponse> => {
-  const requestBody = { status: newStatus };
   return api
     .put<UpdateSellerStatusResponse>(
-      `${BASE_URL}/admin/sellers/${sellerId}/status`,
-      requestBody
+      `/api/admin/sellers/${sellerId}/status`,
+      { status: newStatus }
     )
     .then((res) => res.data);
 };
 
+// === PRODUCT MANAGEMENT (ADMIN) ===
 export const getAdminProducts = async (
   page: number,
   size: number,
@@ -138,8 +130,11 @@ export const getAdminProducts = async (
   sortBy?: string,
   sortDir?: "ASC" | "DESC"
 ): Promise<ApiResponse<ProductPageData>> => {
+  // Lưu ý: Endpoint này có thể là /api/products (public/mixed) hoặc /api/admin/products tùy backend.
+  // Dựa trên quyền admin, thường sẽ gọi API public nhưng có quyền quản trị hoặc API riêng.
+  // Giả định backend dùng chung /api/products nhưng filter được status ẩn.
   return api
-    .get<ApiResponse<ProductPageData>>(`${BASE_URL}/products`, {
+    .get<ApiResponse<ProductPageData>>("/api/products", {
       params: {
         pageNo: page,
         pageSize: size,
@@ -158,7 +153,7 @@ export const adminUpdateProductVisibility = (
 ): Promise<ApiResponse<ApiProduct>> => {
   return api
     .patch<ApiResponse<ApiProduct>>(
-      `${BASE_URL}/products/${productId}/visibility`,
+      `/api/products/${productId}/visibility`,
       { isVisible }
     )
     .then((res) => res.data);
@@ -168,15 +163,16 @@ export const adminDeleteProduct = (
   productId: number
 ): Promise<ApiResponse<null>> => {
   return api
-    .delete<ApiResponse<null>>(`${BASE_URL}/products/${productId}`)
+    .delete<ApiResponse<null>>(`/api/products/${productId}`)
     .then((res) => res.data);
 };
 
+// === CATEGORY MANAGEMENT ===
 export const getAdminCategories = async (): Promise<
   ApiResponse<ApiCategory[]>
 > => {
   return api
-    .get<ApiResponse<ApiCategory[]>>(`${BASE_URL}/categories`)
+    .get<ApiResponse<ApiCategory[]>>("/api/categories")
     .then((res) => res.data);
 };
 
@@ -184,7 +180,7 @@ export const createCategory = async (
   data: CreateCategoryRequest
 ): Promise<ApiResponse<ApiCategory>> => {
   return api
-    .post<ApiResponse<ApiCategory>>(`${BASE_URL}/categories`, data)
+    .post<ApiResponse<ApiCategory>>("/api/categories", data)
     .then((res) => res.data);
 };
 
@@ -193,7 +189,7 @@ export const updateCategory = async (
   data: UpdateCategoryRequest
 ): Promise<ApiResponse<ApiCategory>> => {
   return api
-    .put<ApiResponse<ApiCategory>>(`${BASE_URL}/categories/${id}`, data)
+    .put<ApiResponse<ApiCategory>>(`/api/categories/${id}`, data)
     .then((res) => res.data);
 };
 
@@ -201,17 +197,18 @@ export const deleteCategory = async (
   id: number
 ): Promise<ApiResponse<null>> => {
   return api
-    .delete<ApiResponse<null>>(`${BASE_URL}/categories/${id}`)
+    .delete<ApiResponse<null>>(`/api/categories/${id}`)
     .then((res) => res.data);
 };
 
+// === ORDER MANAGEMENT ===
 export const getAdminOrders = async (
   page: number,
   size: number,
   status: string
 ): Promise<ApiResponse<OrderPageData>> => {
   return api
-    .get<ApiResponse<OrderPageData>>(`${BASE_URL}/admin/orders`, {
+    .get<ApiResponse<OrderPageData>>("/api/admin/orders", {
       params: {
         pageNo: page,
         pageSize: size,
@@ -225,10 +222,10 @@ export const updateAdminOrderStatus = async (
   orderId: string,
   status: ApiOrderStatus
 ): Promise<ApiResponse<ApiOrderData>> => {
+  // Admin update status order
   return api
-    .patch<ApiResponse<ApiOrderData>>(`${BASE_URL}/orders/${orderId}/status`, {
+    .patch<ApiResponse<ApiOrderData>>(`/api/orders/${orderId}/status`, {
       status,
     })
     .then((res) => res.data);
-    // hi ae
 };
