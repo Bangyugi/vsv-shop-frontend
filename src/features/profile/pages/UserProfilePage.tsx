@@ -86,6 +86,8 @@ const UserProfilePage = () => {
     }
   };
 
+  // lmao
+
   return (
     <Box sx={{ bgcolor: "background.default", py: { xs: 4, md: 8 } }}>
       <Container maxWidth="lg">
