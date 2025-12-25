@@ -162,7 +162,7 @@ const AccountDetails = () => {
               disabled={formik.isSubmitting}
             />
           </Grid>
-          {/* Last Name */}
+
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
@@ -177,7 +177,7 @@ const AccountDetails = () => {
               disabled={formik.isSubmitting}
             />
           </Grid>
-          {/* Email */}
+
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
@@ -193,7 +193,7 @@ const AccountDetails = () => {
               disabled
             />
           </Grid>
-          {/* Phone */}
+
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
@@ -208,7 +208,7 @@ const AccountDetails = () => {
               disabled={formik.isSubmitting}
             />
           </Grid>
-          {/* Birth Date */}
+
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
@@ -227,7 +227,7 @@ const AccountDetails = () => {
               disabled={formik.isSubmitting}
             />
           </Grid>
-          {/* Gender */}
+
           <Grid item xs={12} sm={6}>
             <FormControl
               fullWidth
@@ -253,7 +253,7 @@ const AccountDetails = () => {
               )}
             </FormControl>
           </Grid>
-          {/* Avatar URL */}
+
           <Grid item xs={12}>
             <TextField
               fullWidth
@@ -268,7 +268,7 @@ const AccountDetails = () => {
               disabled={formik.isSubmitting}
             />
           </Grid>
-          {/* Submit Button */}
+
           <Grid item xs={12} className="text-right">
             <Button
               type="submit"

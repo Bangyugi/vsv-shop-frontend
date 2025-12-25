@@ -8,11 +8,11 @@ import React, {
 } from "react";
 import { Snackbar, Alert, type AlertColor } from "@mui/material";
 
-// --- Types ---
+
 interface NotificationState {
   open: boolean;
   message: string;
-  severity: AlertColor; // 'success' | 'info' | 'warning' | 'error'
+  severity: AlertColor; 
   duration?: number;
 }
 
@@ -25,12 +25,12 @@ interface SellerNotificationContextType {
   hideNotification: () => void;
 }
 
-// --- Context Creation ---
+
 const SellerNotificationContext = createContext<
   SellerNotificationContextType | undefined
 >(undefined);
 
-// --- Provider Component ---
+
 interface SellerNotificationProviderProps {
   children: ReactNode;
 }
@@ -61,7 +61,7 @@ export const SellerNotificationProvider: React.FC<
     []
   );
 
-  // FIX: đổi event -> _event để tránh lỗi unused variable
+  
   const hideNotification = useCallback(
     (_event?: React.SyntheticEvent | Event, reason?: string) => {
       if (reason === "clickaway") {

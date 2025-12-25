@@ -33,12 +33,13 @@ const validTabs: ProfileTab[] = [
   "security",
 ];
 
+// Người dùng có thể xem profile
 const UserProfilePage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { user, isAuthenticated, isLoading } = useAuth();
-  const location = useLocation(); // <-- Khai báo location
+  const location = useLocation(); // <-- Khai báo location để lấy endpoint hiện tại
 
   const getActiveTabFromUrl = (): ProfileTab => {
     const tabFromUrl = searchParams.get("tab") as ProfileTab;

@@ -8,7 +8,7 @@ import type {
 
 // CHÚ Ý: Chỉ để domain gốc, không thêm /api ở đây
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "https://vsv-shop-backend-production.up.railway.app";
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 const api = axios.create({
   baseURL: API_BASE_URL,

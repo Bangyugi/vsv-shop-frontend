@@ -25,6 +25,7 @@ import type {
 import { useAuth } from "../../../contexts/AuthContext";
 import { mapApiAddressToUserAddress } from "../../../utils/addressUtils";
 
+//Người dùng có thể quản lý địa chỉ của họ
 const AddressBook = () => {
   const { user } = useAuth();
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
