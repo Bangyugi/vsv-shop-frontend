@@ -27,6 +27,7 @@ import type {
 import ReviewDialog from "../../order/components/ReviewDialog";
 import { useNotification } from "../../../contexts/NotificationContext";
 
+// mock function to map API order status to our tab categories
 const mapApiStatusToTab = (apiStatus: ApiOrderStatus): OrderStatusTab => {
   switch (apiStatus) {
     case "PENDING":
@@ -211,6 +212,7 @@ const OrderCard = forwardRef<
 
 const PAGE_SIZE = 5;
 
+// Người dùng có thể xem lịch sử đơn hàng của họ
 const OrderHistory = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { latestOrderUpdate, latestOrderEventType } = useNotification();
@@ -218,7 +220,7 @@ const OrderHistory = () => {
   const [orders, setOrders] = useState<ApiOrderData[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   // FIX: Xóa biến totalElements không sử dụng
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -272,7 +274,7 @@ const OrderHistory = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page]); 
+  }, [page]);
 
   useEffect(() => {
     fetchOrders();

@@ -13,6 +13,7 @@ import type {
 import { useWishlist } from "../../../contexts/WishlistContext";
 import { useCart } from "../../../contexts/CartContext";
 
+// Người dùng có thể xem danh sách yêu thích của họ
 const ProfileWishlist = () => {
   const {
     wishlistData,

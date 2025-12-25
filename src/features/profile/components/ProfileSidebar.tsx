@@ -29,6 +29,7 @@ import * as uploadService from "../../../services/uploadService";
 import * as authService from "../../../services/authService";
 import type { UpdateProfileRequest } from "../../../types/auth";
 
+// Người dùng có thể quản lý sidebar profile của họ
 interface ProfileSidebarProps {
   userAvatar: string;
   userName: string;
@@ -62,7 +63,9 @@ const ProfileSidebar = ({
     logout();
   };
 
-  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
 
@@ -128,8 +131,15 @@ const ProfileSidebar = ({
         sx={{ p: 3, borderRadius: "12px", height: "100%" }}
       >
         <Box className="flex flex-col items-center text-center" sx={{ mb: 4 }}>
-          <Box sx={{ position: "relative", mb: 2, display: "flex", flexDirection: "column", alignItems: "center" }}>
-            
+          <Box
+            sx={{
+              position: "relative",
+              mb: 2,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
             {/* Wrapper for Avatar and Loading Overlay to ensure perfect circle clipping */}
             <Box
               sx={{
